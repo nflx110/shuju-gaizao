@@ -5,13 +5,14 @@
  * 浏览器打开 http://127.0.0.1:8788/瀑布流广告位置解析.html
  */
 import { createServer } from "http";
-import { readFileSync, existsSync, statSync } from "fs";
+import { readFileSync, existsSync, statSync, mkdirSync } from "fs";
 import { extname, join, dirname, normalize } from "path";
 import { fileURLToPath } from "url";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const HOST = "127.0.0.1";
 const PORT = Number(process.env.SHOT_AI_PORT || 8788);
+const STORE_DIR = join(ROOT, ".shot-ai-store");
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -29,6 +30,8 @@ function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-cursor-api-key");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Private-Network", "true");
+  res.setHeader("Access-Control-Max-Age", "600");
 }
 
 function send(res, code, body, type = "application/json; charset=utf-8") {
@@ -89,11 +92,15 @@ function buildPrompt(ctx) {
 }
 
 async function runCursorVision(apiKey, modelId, ctx, images) {
-  const { Agent } = await import("@cursor/sdk");
+  const { Agent, JsonlLocalAgentStore } = await import("@cursor/sdk");
+  mkdirSync(STORE_DIR, { recursive: true });
   const agent = await Agent.create({
     apiKey,
     model: { id: modelId || "auto" },
-    local: { cwd: ROOT },
+    local: {
+      cwd: ROOT,
+      store: new JsonlLocalAgentStore(STORE_DIR),
+    },
   });
   try {
     const run = await agent.send({
@@ -165,7 +172,10 @@ const server = createServer(async (req, res) => {
       const result = await runCursorVision(apiKey, modelId, ctx, images);
       send(res, 200, { ok: true, result });
     } catch (e) {
-      send(res, 500, { error: e.message || String(e) });
+      const msg = [e && e.message, e && e.cause && e.cause.message].filter(Boolean).join(" | ") || String(e);
+      setShotLog("识别失败 " + msg);
+      if (e && e.stack) console.error(e.stack);
+      send(res, 500, { error: msg });
     }
     return;
   }
@@ -193,6 +203,11 @@ const server = createServer(async (req, res) => {
 function setShotLog(msg) {
   console.log("[shot-ai]", msg);
 }
+
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 70000;
+server.requestTimeout = 10 * 60 * 1000;
+server.timeout = 10 * 60 * 1000;
 
 server.listen(PORT, HOST, () => {
   console.log("瀑布流 AI 识图服务 http://" + HOST + ":" + PORT + "/瀑布流广告位置解析.html");

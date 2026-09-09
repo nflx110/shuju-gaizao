@@ -377,7 +377,7 @@
     </div>
     <div class="card">
         <div class="stream-title">前端截图识别</div>
-        <p class="hint">AI 识图需先启动本机服务：双击 <code>启动AI识别服务.command</code>，或在本目录执行 <code>npm install && node shot_ai_server.mjs</code>，然后打开 <code>http://127.0.0.1:8788/瀑布流广告位置解析.html</code>。密钥在 Cursor Dashboard → Integrations。</p>
+        <p class="hint">AI 识图请用本机地址打开：<code>http://127.0.0.1:8788/瀑布流广告位置解析.html</code>（不要用 github.io，否则浏览器会拦截）。先双击 <code>启动AI识别服务.command</code>。密钥在 Cursor Dashboard → API Keys。</p>
         <p class="hint" id="shot-health">正在检测 AI 服务…</p>
         <div class="cfg" style="margin-top:10px">
             <div>
@@ -2037,24 +2037,38 @@
         const asciiKey = String(apiKey || "").replace(/[^\t\x20-\x7E]/g, "");
         const headers = { "Content-Type": "application/json" };
         if (asciiKey) headers["x-cursor-api-key"] = asciiKey;
-        const r = await fetch(aiServerBase() + "/api/ai-vision", {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify({
-                apiKey: apiKey,
-                model: model,
-                images: images,
-                context: {
-                    cols: layout.cols,
-                    group: layout.group,
-                    startOrder: startOrder,
-                    expectOrders: expectList.map((x) => x.order),
-                    backendAds: backendAds,
-                    filenames: shotState.items.map((x, i) => "shot-" + (i + 1) + ".jpg"),
-                },
-            }),
-        });
-        const j = await r.json();
+        let r;
+        try {
+            r = await fetch(aiServerBase() + "/api/ai-vision", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    apiKey: apiKey,
+                    model: model,
+                    images: images,
+                    context: {
+                        cols: layout.cols,
+                        group: layout.group,
+                        startOrder: startOrder,
+                        expectOrders: expectList.map((x) => x.order),
+                        backendAds: backendAds,
+                        filenames: shotState.items.map((x, i) => "shot-" + (i + 1) + ".jpg"),
+                    },
+                }),
+            });
+        } catch (e) {
+            const httpsPage = location.protocol === "https:";
+            throw new Error(
+                httpsPage
+                    ? "浏览器拦截了本机识别服务。请改用 http://127.0.0.1:8788/瀑布流广告位置解析.html 打开本页，不要用 github.io。"
+                    : ("连不上本机识别服务（" + ((e && e.message) || "Network request failed") + "）。请确认终端里 node shot_ai_server.mjs 还在跑。")
+            );
+        }
+        const raw = await r.text();
+        let j = {};
+        try { j = raw ? JSON.parse(raw) : {}; } catch (_) {
+            throw new Error(raw ? raw.slice(0, 240) : ("HTTP " + r.status));
+        }
         if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
         return j.result;
     }
