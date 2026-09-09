@@ -2,6 +2,14 @@
 
 本地工具集：瀑布流广告位置解析、暖风数据解析、Charles 辅助脚本。
 
+## 在线地址
+
+- 工具首页：https://nflx110.github.io/shuju-gaizao/
+- 瀑布流广告位置解析：https://nflx110.github.io/shuju-gaizao/瀑布流广告位置解析.html
+- 仓库：https://github.com/nflx110/shuju-gaizao
+
+截图 AI 识别仍需在本机启动服务，在线页只能做接口粘贴和对照。
+
 ## 瀑布流广告位置解析
 
 对照爱奇艺「猜你喜欢」瀑布流广告插位。
@@ -14,4 +22,4 @@
 
 ## 说明
 
-仓库默认私有。请勿把 API Key、`.env` 或个人照片提交进 Git。
+请勿把 API Key、`.env` 或个人照片提交进 Git。
