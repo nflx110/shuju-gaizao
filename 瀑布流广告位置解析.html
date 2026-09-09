@@ -1663,22 +1663,30 @@
     }
 
     function filesFromClipboard(dt) {
-        const out = [];
-        const seen = new Set();
-        if (!dt) return out;
-        const push = (f) => {
-            if (!f || seen.has(f)) return;
-            if (!(/^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name || ''))) return;
-            seen.add(f);
-            out.push(f);
-        };
-        if (dt.files) Array.from(dt.files).forEach(push);
-        if (dt.items) {
+        if (!dt) return [];
+        let files = [];
+        if (dt.files && dt.files.length) {
+            files = Array.from(dt.files);
+        } else if (dt.items) {
             for (let i = 0; i < dt.items.length; i++) {
                 const it = dt.items[i];
-                if (it.kind === 'file') push(it.getAsFile());
+                if (it.kind === 'file') {
+                    const f = it.getAsFile();
+                    if (f) files.push(f);
+                }
             }
         }
+        files = files.filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|tiff?)$/i.test(f.name || ''));
+        const preferred = files.filter(f => /image\/(png|jpe?g|webp|gif)/i.test(f.type) || /\.(png|jpe?g|webp|gif)$/i.test(f.name || ''));
+        if (preferred.length) files = preferred;
+        const out = [];
+        const seen = new Set();
+        files.forEach(f => {
+            const key = String(f.size || 0) + ':' + String(f.type || '') + ':' + String(f.name || '');
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push(f);
+        });
         return out;
     }
 
@@ -2163,11 +2171,15 @@
             shotInput.value = '';
         });
     }
+    let lastPasteAt = 0;
     document.addEventListener('paste', (e) => {
         const files = filesFromClipboard(e.clipboardData);
         if (!files.length) return;
         const text = (e.clipboardData && e.clipboardData.getData('text/plain')) || '';
         if (isTypingTarget(e.target) && text) return;
+        const now = Date.now();
+        if (now - lastPasteAt < 120) return;
+        lastPasteAt = now;
         if (addPastedShots(e.clipboardData)) e.preventDefault();
     });
     const btnShot = document.getElementById('btn-shot');
