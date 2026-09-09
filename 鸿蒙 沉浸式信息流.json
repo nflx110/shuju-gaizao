@@ -1,0 +1,260 @@
+﻿[
+    {
+        "comment": "沉浸式信息流999-横版视频-跳转类型0_网页跳转",
+        "templateType": "roll",
+        "cuepointType": 0,
+        "adZoneId": 1000000000999,
+        "clickThrough": "http://www.baidu.com",
+        "clickThroughType": "0",
+        "orderItemId": 9000001000,
+        "advertiserId": 51200111807,
+        "orderChargeType": 0,
+        "awardDays": 10,
+        "phoneBrand": "20",
+        "conversionRealId": null,
+        "taskCycle": 12,
+        "firstDownloadType": 4,
+        "downloadToolType": 4,
+        "timeSlices": "1",
+        "vastObject": "\"\n\n<?xml version=\"1.0\"?>\n<VAST version=\"3.0\">\n    <Ad>\n        <InLine>\n            <Impression>\n                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&sba=__BUTTON_AREA_X1Y1X2Y2__&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=0&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&sia=__IMP_AREA_X1Y1X2Y2__&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=299e9327e8679c05ffb64a380da81937&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n            </Impression>\n            <Creatives>\n                <Creative>\n                    <Linear>\n                        <TrackingEvents>\n                            <Tracking event=\"viewableImpression\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=24&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=8e5667dd641cbf0a1c7da696acc6d85d&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"repeatedImpression\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=25&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=ea96400419d342a33cef93712e0eca2a&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"slidingImpression\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=26&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=a1796e4a54a2db685b5a1dbd681d79e2&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"trueview\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&ur=8611_861100&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=3&udm=10&x=5HsqGN0JfBFSREgI5h3t9w!!&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&cv=11.9.5&pt=CUPID_VPT&odt=101&trs=CUPID_TRS&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&ocs=1&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=1e2ab16e2da16915c2a439ad7a95dc19&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"conversion\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=23&udm=10&x=5HsqGN0JfBFSREgI5h3t9w!!&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&mvpt=0&tci=CUPID_CCN&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=d17be40f55875341a6a00ee364420801&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"downloadStart\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&mvpt=0&tci=10201&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=20&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=5cd48df3242684b249ae1e69ad88c6c8&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"downloaded\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&mvpt=0&tci=10202&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=21&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=120ffe820d5ee39ee8a884cfb1fb3a73&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"installed\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&mvpt=0&tci=10203&ac=2276789997&cg=55001507350&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&wpv=1.000000&lt=1&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&h=CUPID_PPID&a=22&x=5HsqGN0JfBFSREgI5h3t9w!!&udm=10&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ocs=1&ur=8611_861100&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=c1d9bcf6658f5a2ef48baf93e7ef62f9&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                            <Tracking event=\"close\">\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&ur=8611_861100&wpv=1.000000&lt=1&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&nfid=CUPID_NFID&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&ps=0&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&afd=35&nfds=CUPID_NFDS&cpmf=huawei&z=0&h=CUPID_PPID&a=4&udm=10&x=5HsqGN0JfBFSREgI5h3t9w!!&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&tpt=0&osv=10&ttm=256&kp=8fddda82ad7b2720&gd=2&cti=1639163706103940&ad=15&bts=1600761621&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ft=1&ocs=1&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&f=8fddda82ad7b2720&crver=0&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&ctt=0&odt=101&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=1af938286c0d7620c638572a923e80fd&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&pri=3016&sci=3210&cft=1600762752578550&gs=1]]>\n                            </Tracking>\n                        </TrackingEvents>\n                        <VideoClicks>\n                            <ClickThrough type=\"0\"><![CDATA[http://www.baidu.com]]></ClickThrough>\n                            <ClickTracking>\n                                <![CDATA[http://t7z.cupid.iqiyi.com/dsp_track3?poc=1&wpa=5&wpb=5&wpi=8&acu=0&bln=%E5%8C%97%E4%BA%AC%E9%AB%98%E9%80%94%E4%BA%91%E9%9B%86%E6%95%99%E8%82%B2%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8&afd=35&da=0&mcplid=9&tabi=1114%3AB%7C1000%3AB%7C331%3AJ%7C1132%3AB%7C1030%3AB%7C788%3AB%7C399%3AB%7C936%3AB%7C896%3AC%7C234%3AB%7C822%3AC%7C823%3AD%7C1348%3AC%7C1048%3AE%7C1015%3AB%7C1123%3AD%7C1087%3AE%7C1212%3AD%7C1028%3AD%7C1311%3AA%7C511%3AB%7C659%3AB%7C439%3AB%7C522%3AD%7C468%3AB%7C1003%3Ab01&mvpt=0&xwi=CUPID_XWI&uvpt=CUPID_UVPT&sdt=1&siga=0&scp=__CLICK_POS_XY__&mch=1&tivc=z0yeAiie1wncGHuoQeJv_A!!&iat=0&ubau=1&ids=0&iiad=0&iia=0&iirv=-1&ws=1&qxlu=0&cdu=1&ac=2276789997&cg=55001507350&ur=8611_861100&wpv=1.000000&lt=1&rdb=XLr2O-oHrP7JIzBEbnlPVQ!!&actr=GU3QVjvvwyeswevQVezs2A!!&og=62000983310&api=CAA%3D&pwb=jTATVzHSvgy7SiyzGp6FGg!!&acvr=LsrjY12VR2elka5sobnPnA!!&cv=11.9.5&m=LIO%2DAN00&qapt=0&swh=1176&i=qc_100001_100086&lc=86110108&j=2&rp=jTATVzHSvgy7SiyzGp6FGg!!&ps=0&sco=CUPID_OFFSET&iqid=5f9e18b8eb456401859591337d1b4ac30310000d&iav=0&n=3233229720106100&k=6149904742234201&d=63001459023&pf=33&lgt=116.306887&gisp=5&cpmf=huawei&z=0&a=1&udm=10&x=5HsqGN0JfBFSREgI5h3t9w!!&lpt=4&req=a8c3d9d6782ee7bb3a287659475e69ca&tpt=0&osv=10&gd=2&cti=1639163706103940&ad=15&bts=1600761621&h=CUPID_PPID&mc=02:75:ED:A1:7A:A2&rm=TSCORER_A&pro=8600&l=69842642483add0a63503306d63f0443&aeg=0&b=1600762752&sv=5.57.009&sht=2400&opdt=-1&g=3f4549a8cbd735052f652e01fbe62af41103&sib=0&e=MjAyLjEwOC4xNC4yNDA&tt=260&city=860000&impc=2&dc=bj&cou=86&c=b13a1f412d81047eb8ceabc7c3fb1572&o=0&v=${SETTLEMENT}&ttm=256&kp=8fddda82ad7b2720&ca=CUPID_CLA&w=63001447105&ox=5HsqGN0JfBFSREgI5h3t9w!!&tial=z0yeAiie1wncGHuoQeJv_A!!&q=64002505783&ltt=39.981782&spe=_tagZ_szQl6Qd4PsZLlzDg!!&cr=qwK38tNDRlUhYqQNdubJeA!!&y=1&bz=1&pts=CUPID_VPC&ai=51200120075&orm=ESSM_SCORE_A&ag=3640&fc=CUPID_FC&et=__TS__&si=169038100&udp=5&p=1000000000695&agt=20000000005&ospe=_tagZ_szQl6Qd4PsZLlzDg!!&agi=51200120075&tfs=1&lpv=1&ocf=0.640000&tv=2&gs=1&cft=1600762752578550&f=8fddda82ad7b2720&crver=0&sia=__IMP_AREA_X1Y1X2Y2__&cp=zsmgP0k2F5dj66lntDwQ9w!!&scte=0&adi=8fddda82ad7b2720&ctt=0&odt=101&ocs=1&ci=19901&crwb=5VqKnADFkDQcDzgUj1VgpQ!!&s=85d4f8ebf4de76602c2091e35a448919&osb=93dHIRmw0aU8F4jToP5rMg!!&ept=0&obt=5&ms=1&bt=3&oaap=93dHIRmw0aU8F4jToP5rMg!!&oa=0f65eb7b-affe-07c2-df9f-f72fbccf86bb&stm=1&pri=3016&sci=3210]]>\n                            </ClickTracking>\n                        </VideoClicks>\n                    </Linear>\n                </Creative>\n            </Creatives>\n        </InLine>\n    </Ad>\n</VAST>\"",
+        "creativeId": 20000,
+        "orderItemType": 2,
+        "awardType": 0,
+        "deliverType": 0,
+        "creativeTemplate": "http://www.iqiyi.com/common/flashplayer/20140813/roll_2_1_7.swf",
+        "guideShowDuration": 5,
+        "banMacroSubstitution": 1,
+        "isShowCard": 1,
+        "crex": "undefined",
+        "coverUrl": "undefined",
+        "impressionXid": "undefined",
+        "creativeType": "swf",
+        "dspName": "",
+        "isDSP": 0,
+        "tc": "14882_B",
+        "impressionTime": 10,
+        "skipTime": 7,
+        "adNfc": "[{\"id\":11000,\"o\":1,\"n\":\"举报\",\"c\":[{\"o\":1,\"id\":11001,\"n\":\"低俗色情\"},{\"o\":2,\"id\":11002,\"n\":\"不实信息\"},{\"o\":3,\"id\":11003,\"n\":\"违法信息\"},{\"o\":4,\"id\":11999,\"n\":\"其他\"},{\"o\":5,\"id\":11004,\"n\":\"内容让人反感（惊悚、少儿不宜等）\"}]}, {\"id\":10000,\"o\":2,\"n\":\"不喜欢\", \"c\":[{\"o\":1,\"id\":10001,\"n\":\"不感兴趣\"},{\"o\":2,\"id\":10002,\"n\":\"内容质量差\"},{\"o\":3,\"id\":10003,\"n\":\"重复或相似内容\"}]}]",
+        "isTargeted": "true",
+        "pingbackConfig": {
+            "http://t7z.cupid.iqiyi.com/dsp_track": {
+                "p": "qxt"
+            },
+            "http://tc.cupid.iqiyi.com/dsp_conversion_cb": {
+                "p": "qxt"
+            },
+            "http://v6z.cupid.iqiyi.com/t": {
+                "p": "wht"
+            }
+        },
+        "nfc": {},
+        "adc": {
+            "lm": "3",
+            "ai": "2",
+            "fp": "2"
+        },
+        "sei": "123456789",
+        "adZoneStyle": {
+            "verticalAlign": "top",
+            "horizontalAlign": "left",
+            "backgroundColor": "#000000",
+            "clickable": false,
+            "showCloseButton": false,
+            "keepAfterClick": true,
+            "width": "100pct",
+            "height": "100pct"
+        },
+        "ecpm": "undefined",
+        "emptyTracking": {
+            "trackingTimeouts": [
+                10000
+            ],
+            "params": {
+                "tst": "908a87e05ea78b40593e9889a9a23c51",
+                "ai": "a1f4726536cc734f",
+                "iv": "0",
+                "cv": "10.8.5",
+                "im": "3018382ca90caac98f741f311e2b5671",
+                "city": 0,
+                "o": "0",
+                "ian": "1",
+                "osv": "8%2E0%2E0",
+                "a": "0",
+                "p": "1000000000999",
+                "ltt": "39.981867",
+                "gisp": 12,
+                "agp": "0.910000",
+                "lgt": "116.307112",
+                "kp": "3018382ca90caac98f741f311e2b5671",
+                "gdp": "-0.100000",
+                "as": "1",
+                "m": "SM-G9500",
+                "dr": "54000",
+                "sv": "3.40.004",
+                "j": "30001",
+                "tpt": 0,
+                "uvpt": 0,
+                "ag": 603,
+                "mc": "DC:EF:CA:FA:44:77",
+                "y": 1,
+                "rt": "1566545745",
+                "z": "0",
+                "l": "69842642483add0a63503306d63f0443",
+                "f": "3018382ca90caac98f741f311e2b5671",
+                "i": "qc_100001_100086",
+                "mvpt": 0,
+                "h": "",
+                "ps": "0",
+                "msr": 1,
+                "gd": 0,
+                "dbu": 0,
+                "g": "354765085351773",
+                "usi": "S2383b3e56802ee1462031e46eca7f2e8",
+                "t": "1000000003023",
+                "e": "MTAuMy4zMy4xOTg",
+                "d": "1000000000071",
+                "ri": "58c4aaf77cf057adf8bc377def3eb534",
+                "ivm": "0"
+            },
+            "timeSlices": [
+                {
+                    "dts": "1:2002:1",
+                    "c": "e9c018728329d4db1a23a8a936b9ea48",
+                    "q": "64000009242",
+                    "sb": 1,
+                    "w": "2",
+                    "nr": "",
+                    "ord": "63000025577",
+                    "isr": 1
+                },
+                {
+                    "dts": "1:2002:1",
+                    "c": "e9c018728329d4db1a23a8a936b9ea48",
+                    "q": "64000009242",
+                    "sb": 1,
+                    "w": "1",
+                    "nr": "",
+                    "ord": "63000025577",
+                    "isr": 1
+                },
+                {
+                    "dts": "1:2002:1",
+                    "c": "e9c018728329d4db1a23a8a936b9ea48",
+                    "q": "64000009242",
+                    "sb": 1,
+                    "w": "3",
+                    "nr": "",
+                    "ord": "63000025577",
+                    "isr": 1
+                }
+            ]
+        },
+        "iqiyiTracking": {
+            "cupidTracking": {
+                "trackingParam": {
+                    "p": "1000000000999",
+                    "ca": "CUPID_CLA"
+                },
+                "events": [
+                    0,
+                    1,
+                    3,
+                    4,
+                    23
+                ]
+            }
+        },
+        "clickTracking": {},
+        "impressionTracking": {},
+        "eventTracking": {},
+        "downloadByAppStore": 1,
+        "qchi": "undefined",
+        "creativeObject": {
+            "qipuid": "1506968815851217",
+            "title": "沉浸式信息流999-横版视频-跳转类型0_网页跳转",
+            "m400Url": "http://data.video.iqiyi.com/videos/other/20210206/1b/34/181c71a2195ae412f31687652c6f971d.mp4",
+            "duration": "28",
+            "needAdBadge": "false",
+            "background": "http://pic0.iqiyipic.com/common/20210205/89083c6cd34849f395f5ef69fda60430.jpg",
+            "autoOpenLandingPage": "true",
+            "branchAds": [
+                {
+                    "cVid": "dde8959f5392dcc02e864bc5264fc076",
+                    "cUrl": "http://data.video.iqiyi.com/videos/other/20191107/ef/c7/d731a201b1d813af71d7d4cbe573e05a.f4v",
+                    "bVid": "c6c837ef1d839846d14c4276e1bcdcca",
+                    "bUrl": "http://data.video.iqiyi.com/videos/other/20191107/6a/c1/f65c2e1d25c209560baf93d63be16bbf.f4v",
+                    "lowUrl": "http://data.video.iqiyi.com/videos/other/20191107/6a/c1/f65c2e1d25c209560baf93d63be16bbf.f4v",
+                    "duration": "15",
+                    "default": "0",
+                    "m400Vid": "77a2f45341c10ecd0add5fd02b5c6a32",
+                    "jUrl": "http://data.video.iqiyi.com/videos/other/20191107/fb/54/e6e8b83d4707143bf663ddd003c9ec6f.f4v",
+                    "cH264Ts": "H4sIAAAAAAAAAL3V30vDMBAH8Pf+G4M9ufaSXC7JYMhgUwY6QTvYa12zHyDdtGHgf2+TtaLte54KR0k+fC+XjJbb/FlsklHznWwn+fz1cZkvNq/zfPWynvJQX60fpuwuOTp3mWZZWbgivZ5Ke04v7vM7PZzcNXXXLJTq7OzqjAMzjIHK7D7bqUwBgTJkFUMtpSq1xn1TKkqwdo/0nrr6vnbFl5vB2FbljBtUGse7c+Vs5T5sdXDHrliXM/hF8SiodmcvUwxQ8p4MmSTSXsaEEJFxrcjjGBcAg9wkMyS414m/ujj97EiBR0JIMQgPBGIIT3Ki2LyWFHhaKaahf+pQ0I1HBLEPXkcKM+GTlNTjCcm1Is9TJnpzO1LgSYVgBjxEQPA8E38yOlLgac6hmdF+c5VRYTSa9eP7WpP3CTBsGB8nA/x2sTR/xh6OzhR8XGrfyf8+RmQwXMkMO1/zhizXi6fVW54kP4e+cH9cBgAA",
+                    "jVid": "296608762047d67a89157afd4636ced6",
+                    "m400Url": "http://data.video.iqiyi.com/videos/other/20191107/4e/31/a879b8105ea4bc3a397cbda14530c5f0.mp4",
+                    "qipuid": "271431017",
+                    "gUrl": "http://data.video.iqiyi.com/videos/other/20191107/9d/a0/31c3dc8138bffd7f962f41d5fb06fd86.f4v",
+                    "m200Vid": "1a03bee96ad6f5a997fc9264af2c728e",
+                    "gVid": "552d07b8029eb60b61b4e3cf0e5b0957",
+                    "highUrl": "http://data.video.iqiyi.com/videos/other/20191107/9d/a0/31c3dc8138bffd7f962f41d5fb06fd86.f4v",
+                    "m200Url": "http://data.video.iqiyi.com/videos/other/20191107/d8/52/c8ce04094ff61f73430eadcc270dd8fa.mp4"
+                },
+                {
+                    "cVid": "316793dcfbac6a09a352f505f3234978",
+                    "cUrl": "http://data.video.iqiyi.com/videos/other/20191107/df/0d/390b04d4ef5aa48d4bf2ce1da93e68c4.f4v",
+                    "bVid": "4b7d9e632de56c5d27b8a5e21bf41ebd",
+                    "bUrl": "http://data.video.iqiyi.com/videos/other/20191107/f6/18/b3a3a0d75f8f0d2cd113ab8daf7a6bea.f4v",
+                    "lowUrl": "http://data.video.iqiyi.com/videos/other/20191107/f6/18/b3a3a0d75f8f0d2cd113ab8daf7a6bea.f4v",
+                    "duration": "15",
+                    "default": "1",
+                    "m400Vid": "2f5c9069b5bde718b94abc0e772a515a",
+                    "jUrl": "http://data.video.iqiyi.com/videos/other/20191107/bd/83/b79bc71a7cfb3e23e1b6e9c07e4d9250.f4v",
+                    "cH264Ts": "H4sIAAAAAAAAAL3UUWvCMBAH8Pd+DWFPs7lckksqyBB0Q9gcuAq+liZTYVS3BmHffk1sYdT3PAX+L/fjcneT1b58E7ts0r3T/bRcbF9W5XK3XZTr980MY77ePM/wMTt6f5kxZitf5deTdef84r9/88PJX3N/ZTFq2dm3DIEXnINm9pOBZQ45cC6VrU0lJVfCcePQYV1XJKWuc98+tb768XN4cI2di0KQxof63HjX+C/XHPxxCFs7h8SovnKQaU6SzFiGqAsKMgRIjetFAcfRSJAw0inS6tY3Qcl1AynyjAYQNOYZVdyap5QQqXk9KfCQazB3PAFgAAJPp+cNpMiTqKUa81ARYeQVMvnnDqTIM1p3ozjiSQVIkdcVIErt603xpCAZfdc+UfAwncEn/q8upLkrvSn6BIZJGy8HFygjTw287kavNsvX9UeZZX9erZiAvAUAAA==",
+                    "jVid": "a6fedf54a9da71b70bff6a5c0deccbaa",
+                    "m400Url": "http://data.video.iqiyi.com/videos/other/20191107/3f/ec/4afc748805a583900ba10a9a8ac73b0e.mp4",
+                    "qipuid": "271431117",
+                    "gUrl": "http://data.video.iqiyi.com/videos/other/20191107/85/0a/add8e6626813ee6c6bf2061a358f2eb7.f4v",
+                    "m200Vid": "a11b557adbfa27d6894b79d9125629d9",
+                    "gVid": "ae6a76f46c3043f6c72ca585aad965e7",
+                    "highUrl": "http://data.video.iqiyi.com/videos/other/20191107/85/0a/add8e6626813ee6c6bf2061a358f2eb7.f4v",
+                    "m200Url": "http://data.video.iqiyi.com/videos/other/20191107/ec/ea/57ca85c4f8c32cd0e445330527f5f654.mp4"
+                }
+            ],
+            "multiCreative": [
+                {
+                    "tvId": "286953217",
+                    "coverUrl": "http://pic2.iqiyipic.com/common/20190809/c29b16bc71f3415f847573ae3285f4ec.png",
+                    "title": "素材1",
+                    "id": "111",
+                    "clickThroughUrl": "http://www.jd.com",
+                    "detailPage": "http://www.baidu.com"
+                },
+                {
+                    "tvId": "689670217",
+                    "coverUrl": "http://pic6.iqiyipic.com/advertise/20200709/8c3cb8be3749d530dc1c92b63d1b0b09cb372b0f0de63a7bf4feb6e2ca839a51_xxx.jpg",
+                    "title": "素材2",
+                    "id": "222",
+                    "clickThroughUrl": "http://www.hao123.com",
+                    "detailPage": "http://www.jd.com"
+                },
+                {
+                    "tvId": "334556017",
+                    "coverUrl": "http://pic2.iqiyipic.com/common/20190306/87b767ec86f94eaa9e6b8ca9942782d6.png",
+                    "title": "素材3",
+                    "id": "33333",
+                    "clickThroughUrl": "http://www.baidu.com",
+                    "detailPage": "http://www.hao123.com"
+                }
+            ],
+            "detailPage": "http://www.baidu.com",
+            "apkName": "com.baidu.searchbox",
+            "ohosPackageName": "com.baidu.searchbox",
+            "appleId": "1142110895",
+            "appName": "百度",
+            "appIcon": "http://pic1.iqiyipic.com/image/20220119/27/40/pv_10006566021_em_601.png",
+            "buttonTitle": "了解详情"
+        },
+        "adSortIndex": 1786689738874,
+        "enabled": true,
+        "id": "flow_999_横版视频_0_3xuhongwei_wb1786689738874"
+    }
+]

@@ -1,0 +1,19 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+*.pem
+.cursor/
+__pycache__/
+*.pyc
+
+# 安装包过大，不入库
+*.dmg
+*.exe
+pc_tools_mac/Package/
+
+# 个人照片 / 表情，不入库
+证件照*
+坠入丝网*
+cat-suit*
+聊天截图*

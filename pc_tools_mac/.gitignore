@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.dmg
+*.zip
+.DS_Store
+.venv/
+Package/
+*.log
+psnetwork.ini
+.idea/
+.idea/
+.vscode/
+*.pyc
+.Python

@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Premain-Class: local.charles.GridAgent
+Agent-Class: local.charles.GridAgent
+Can-Redefine-Classes: false
+

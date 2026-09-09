@@ -1,0 +1,3146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暖风智能数据解析</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+            --danger-color: #ef4444;
+            --background-color: #f1f5f9;
+            --surface-color: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --header-h: 46px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.55;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body.has-bg .app-container,
+        body.has-bg > footer {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+        }
+
+        body.has-bg.dark-surface .app-container,
+        body.has-bg.dark-surface > footer {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(12px);
+        }
+
+        .app-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 20px 32px;
+            width: 100%;
+            flex: 1;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        header {
+            background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            padding: 0 20px;
+            min-height: var(--header-h);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 6px 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .brand i { opacity: 0.95; }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            align-items: flex-end;
+        }
+
+        .field-inline label {
+            display: block;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+
+        .field-inline select {
+            min-width: 140px;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .field-inline select option {
+            background: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .wallpaper-select { min-width: 180px; }
+
+        .tabs-wrap {
+            position: sticky;
+            top: var(--header-h);
+            z-index: 150;
+            margin: 0 -4px 20px;
+            padding: 4px 0 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            background: var(--surface-color);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            flex: 1 1 auto;
+            min-width: 120px;
+            padding: 10px 14px;
+            border: none;
+            border-radius: var(--radius-md);
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #f8fafc;
+            color: var(--text-primary);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.25s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .layout-grid { grid-template-columns: 1fr; }
+            .tabs .tab-button { min-width: calc(50% - 6px); }
+        }
+
+        @media (max-width: 560px) {
+            .tabs .tab-button { min-width: 100%; }
+        }
+
+        .card {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 20px;
+            position: relative;
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .card-title .hint {
+            font-weight: 400;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        .form-group { margin-bottom: 14px; }
+
+        .form-group > label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap textarea,
+        .input-wrap input[type="text"],
+        .input-wrap input[type="number"],
+        .input-wrap input[type="datetime-local"] {
+            width: 100%;
+            padding: 10px 40px 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #f8fafc;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrap textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 0.88rem;
+            line-height: 1.45;
+        }
+
+        .input-wrap input:focus,
+        .input-wrap textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+        }
+
+        select.conversion-select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.92rem;
+        }
+
+        .clear-in {
+            position: absolute;
+            right: 8px;
+            top: 10px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-in:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .input-wrap textarea ~ .clear-in { top: 10px; }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: var(--primary-color);
+            color: #fff;
+            transition: filter 0.15s, transform 0.1s;
+        }
+
+        .btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn.secondary {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+        .btn.secondary:hover { background: #cbd5e1; }
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .btn.sm { padding: 6px 10px; font-size: 0.8rem; }
+
+        .result-box {
+            margin-top: 16px;
+            padding: 14px;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-color);
+            min-height: 72px;
+            font-size: 0.88rem;
+        }
+
+        .result-row {
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            background: #fff;
+            border-left: 3px solid var(--primary-color);
+            word-break: break-all;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 0.84rem;
+        }
+
+        .result-row:last-child { margin-bottom: 0; }
+        .result-row.match { border-left-color: var(--success-color); background: #f0fdf4; }
+        .result-row.warn { border-left-color: var(--warning-color); background: #fefce8; }
+        .result-row.err { border-left-color: var(--danger-color); background: #fef2f2; }
+
+        .result-row .row-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .copy-one {
+            flex-shrink: 0;
+        }
+
+        .multi-select {
+            position: relative;
+            z-index: 100;
+        }
+
+        .multi-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .multi-panel {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            max-height: 220px;
+            overflow-y: auto;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 80;
+        }
+
+        .multi-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        .multi-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .multi-panel::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+        .multi-panel::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        .multi-panel.open { display: block; }
+        .multi-panel.show { display: block; }
+
+        .multi-opt, .multi-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .multi-opt:hover, .multi-option:hover { background: #f1f5f9; }
+        .multi-opt.selected, .multi-option.selected { background: #dbeafe; color: var(--primary-color); font-weight: 600; }
+        .multi-opt.manage { color: var(--primary-color); border-top: 1px solid var(--border-color); }
+        
+        .opt-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opt-delete {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        .opt-delete:hover {
+            background: var(--danger-color);
+            color: #fff;
+            opacity: 1;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 0.75rem;
+        }
+
+        .tag button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .custom-list .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #f1f5f9;
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.85rem;
+        }
+
+        .custom-list .item span { cursor: pointer; word-break: break-all; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-card {
+            background: var(--surface-color);
+            width: min(520px, 100%);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-height: 85vh;
+            overflow: auto;
+            padding: 22px;
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .modal-head h3 { font-size: 1.1rem; }
+
+        .close-x {
+            border: none;
+            background: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .verify-input {
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--text-primary);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: transform 0.28s ease, opacity 0.28s ease;
+            max-width: min(90vw, 400px);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .kbd {
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            color: var(--text-secondary);
+        }
+
+        .split-inline {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+
+        .split-inline .input-wrap { flex: 1; min-width: 120px; }
+        .split-inline > .btn {
+            flex-shrink: 0;
+            align-self: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .path-input-row .input-wrap input { padding-right: 36px; }
+
+        .doc-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .doc-toolbar select {
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.9rem;
+            min-width: 220px;
+        }
+
+        .doc-pre {
+            max-height: min(58vh, 640px);
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            padding: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: var(--radius-md);
+            border: 1px solid #334155;
+        }
+
+        .decode-box {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .sdk-param {
+            display: flex;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            background: #fff;
+            word-break: break-all;
+            font-size: 0.84rem;
+        }
+        .sdk-param-key {
+            font-weight: 700;
+            min-width: 88px;
+            color: var(--primary-color);
+            font-family: ui-monospace, Menlo, monospace;
+        }
+        .sdk-param-right { flex: 1; min-width: 0; }
+        .sdk-param-value.clickable {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .sdk-nested { margin-top: 8px; padding-left: 8px; border-left: 2px solid var(--border-color); }
+        .jv-item { margin-left: 1.1em; font-family: ui-monospace, Menlo, monospace; font-size: 0.82rem; line-height: 1.45; }
+        .jv-key { color: #c2410c; }
+        .jv-string { color: #15803d; }
+        .jv-number { color: #db2777; }
+        .jv-boolean { color: #0369a1; font-weight: 700; }
+        .jv-null { color: #94a3b8; font-style: italic; }
+        .jv-toggle { cursor: pointer; user-select: none; color: var(--text-secondary); margin-right: 4px; }
+        .jv-collapsed > .jv-children { display: none; }
+
+
+        .check-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 16px;
+            margin: 8px 0 4px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+        }
+        .check-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .check-row input { accent-color: var(--primary-color); }
+        .stat-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .stat-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+        .stat-pill.ok { background: #dcfce7; color: #166534; }
+        .stat-pill.warn { background: #fef9c3; color: #854d0e; }
+        .stat-pill.err { background: #fee2e2; color: #991b1b; }
+        .stat-pill.muted { background: #e2e8f0; color: #475569; }
+        .mixer-result {
+            max-height: min(78vh, 900px);
+            overflow: auto;
+            padding: 8px;
+        }
+        .block-card {
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #fff;
+        }
+        .block-card.match { border-left: 4px solid var(--success-color); }
+        .block-card.warn { border-left: 4px solid var(--warning-color); }
+        .block-card.err { border-left: 4px solid var(--danger-color); }
+        .block-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.86rem;
+        }
+        .block-head strong { font-family: ui-monospace, Menlo, monospace; }
+        .block-head .chip {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            font-weight: 700;
+        }
+        .block-keys {
+            width: 100%;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+        .block-keys code {
+            background: #fef9c3;
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-right: 4px;
+            font-size: 0.74rem;
+        }
+        .block-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 80px;
+        }
+        @media (max-width: 720px) {
+            .block-grid { grid-template-columns: 1fr; }
+        }
+        .block-pane {
+            overflow: auto;
+            max-height: 420px;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .block-pane + .block-pane { border-left: 1px solid #334155; }
+        .pane-lab {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding: 6px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            background: #1e293b;
+            color: #94a3b8;
+        }
+        .dl-line {
+            padding: 0 10px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .dl-line.same { color: #cbd5e1; }
+        .dl-line.chg { background: #422006; color: #fde68a; }
+        .dl-line.del { background: #450a0a; color: #fca5a5; }
+        .dl-line.add { background: #052e16; color: #86efac; }
+        .dl-line.empty { color: #64748b; font-style: italic; }
+        .layout-span-2 { grid-column: 1 / -1; }
+        .filter-mini {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #f8fafc;
+            font-size: 0.88rem;
+            margin-bottom: 10px;
+        }
+
+        .decode-steps {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="brand"><i class="fas fa-wind"></i> 暖风智能数据解析</div>
+            <div class="header-controls">
+                <div class="field-inline">
+                    <label for="theme-select">主题</label>
+                    <select id="theme-select" aria-label="主题颜色"></select>
+                </div>
+                <div class="field-inline">
+                    <label for="wallpaper-input">背景</label>
+                    <select id="wallpaper-input" class="wallpaper-select" aria-label="页面背景"></select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <div class="tabs-wrap">
+            <nav class="tabs" role="tablist" aria-label="功能分区">
+                <button type="button" class="tab-button active" role="tab" aria-selected="true" data-tab="url-tab"><i class="fas fa-link"></i> URL</button>
+                <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="sdk-tab"><i class="fas fa-unlock-keyhole"></i> 联盟解密</button>
+                <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="json-tab"><i class="fas fa-braces"></i> JSON</button>
+                <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="mixer-tab"><i class="fas fa-code-compare"></i> Mixer</button>
+                <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="time-tab"><i class="fas fa-clock"></i> 时间</button>
+                <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab="codec-tab"><i class="fas fa-shield-halved"></i> 编码</button>
+            </nav>
+        </div>
+
+        <main>
+            <section id="url-tab" class="tab-content active" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-screwdriver-wrench"></i> URL 解析 <span class="hint"><span class="kbd">⌘/Ctrl</span>+<span class="kbd">Enter</span> 解析</span></h2>
+                        <div class="form-group">
+                            <label for="url-input">原始 URL（可省略协议，将自动补全 https://）</label>
+                            <div class="input-wrap">
+                                <textarea id="url-input" placeholder="https://example.com/path?a=1&b=2" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" title="清空" data-clear="url-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>要展示的查询参数（可多选）</label>
+                            <div class="multi-select" id="url-multi-root">
+                                <div class="multi-trigger" id="url-multi-trigger" tabindex="0" role="button" aria-expanded="false" aria-haspopup="listbox">
+                                    <span id="url-multi-label">未选择：解析时将显示全部参数</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </div>
+                                <div class="multi-panel" id="url-multi-panel" role="listbox"></div>
+                            </div>
+                            <div class="tags" id="url-selected-tags" aria-live="polite"></div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-parse-url"><i class="fas fa-play"></i> 解析</button>
+                            <button type="button" class="btn secondary" id="btn-url-components"><i class="fas fa-sitemap"></i> 结构概要</button>
+                            <button type="button" class="btn secondary" id="btn-copy-url-results"><i class="fas fa-copy"></i> 复制结果文本</button>
+                            <button type="button" class="btn ghost" id="btn-clear-url"><i class="fas fa-broom"></i> 清空</button>
+                        </div>
+                        <div id="parsed-results" class="result-box" aria-live="polite"></div>
+                        <div class="decode-box">
+                            <h3 class="card-title" style="font-size:0.95rem;margin-bottom:10px"><i class="fas fa-unlock-keyhole"></i> 加密参数解密（如 ee、e、user_ip 等 Base64 / 多次 URL 编码）</h3>
+                            <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">粘贴单段密文，或从上方解析结果点「解密」带入。依次尝试：URL 解码（含 +）→ Base64（含 URL-safe）→ UTF-8 文本；若结果为 JSON 则自动美化。</p>
+                            <div class="input-wrap">
+                                <textarea id="decode-input" placeholder="粘贴加密参数值（如 ee、e、user_ip 等，不要带参数名）" spellcheck="false" rows="3"></textarea>
+                                <button type="button" class="clear-in" data-clear="decode-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="btn-row">
+                                <button type="button" class="btn" id="btn-decode-run"><i class="fas fa-wand-magic-sparkles"></i> 一键解密</button>
+                                <button type="button" class="btn secondary" id="btn-decode-from-url"><i class="fas fa-filter"></i> 从 URL 取参数值</button>
+                                <button type="button" class="btn ghost" id="btn-decode-copy"><i class="fas fa-copy"></i> 复制结果</button>
+                            </div>
+                            <div id="decode-output" class="result-box" aria-live="polite"></div>
+                            <div class="decode-steps" id="decode-steps"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-code-compare"></i> 查询串对比</h2>
+                        <div class="form-group">
+                            <label for="correct-url-input">参考 URL</label>
+                            <div class="input-wrap">
+                                <textarea id="correct-url-input" placeholder="粘贴标准链接…" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" title="清空" data-clear="correct-url-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-compare-url"><i class="fas fa-magnifying-glass"></i> 比对</button>
+                            <button type="button" class="btn secondary" id="btn-copy-compare"><i class="fas fa-copy"></i> 复制比对</button>
+                        </div>
+                        <div id="comparison-results" class="result-box" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sdk-tab" class="tab-content" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-unlock-keyhole"></i> 请求参数解密 <span class="hint"><span class="kbd">⌘/Ctrl</span>+<span class="kbd">Enter</span></span></h2>
+                        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">按联盟 SDK 规则解密：<code>dvi</code> 走 Base64URL；<code>ee</code> 用 <code>rid</code> 后 20 位 XOR；嵌套 <code>e</code> 用固定密钥 XOR。点参数值可展开下一层。</p>
+                        <div class="form-group">
+                            <label for="sdk-url-input">加密的请求 URL</label>
+                            <div class="input-wrap">
+                                <textarea id="sdk-url-input" placeholder="粘贴带 rid、ee、dvi 等参数的请求 URL" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" data-clear="sdk-url-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-sdk-decrypt"><i class="fas fa-wand-magic-sparkles"></i> 解密</button>
+                            <button type="button" class="btn secondary" id="btn-sdk-from-url"><i class="fas fa-arrow-up"></i> 从 URL 页带入</button>
+                            <button type="button" class="btn ghost" id="btn-sdk-clear"><i class="fas fa-broom"></i> 清空</button>
+                        </div>
+                        <div id="sdk-url-msg" style="margin-top:8px;font-size:0.82rem;color:var(--danger-color)"></div>
+                        <div id="sdk-params" class="result-box" aria-live="polite"></div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-file-shield"></i> 响应体解密</h2>
+                        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">Base64 解码后，与请求 <code>rid</code> 后 20 位做 XOR，再按 JSON 树展示。</p>
+                        <div class="form-group">
+                            <label for="sdk-resp-input">加密的响应内容</label>
+                            <div class="input-wrap">
+                                <textarea id="sdk-resp-input" placeholder="粘贴加密响应（Base64）" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" data-clear="sdk-resp-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn secondary" id="btn-sdk-copy-resp"><i class="fas fa-copy"></i> 复制解密结果</button>
+                        </div>
+                        <div id="sdk-response" class="result-box" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="json-tab" class="tab-content" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-file-code"></i> JSON 提取 <span class="hint"><span class="kbd">⌘/Ctrl</span>+<span class="kbd">Enter</span></span></h2>
+                        <div class="form-group">
+                            <label for="json-input">JSON 文本</label>
+                            <div class="input-wrap">
+                                <textarea id="json-input" placeholder='{ "user": { "name": "张三" } }' spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" data-clear="json-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row" style="margin-top:0">
+                            <button type="button" class="btn secondary sm" id="btn-format-json"><i class="fas fa-indent"></i> 格式化</button>
+                            <button type="button" class="btn secondary sm" id="btn-minify-json"><i class="fas fa-compress"></i> 压缩为一行</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="field-paths">字段路径（每行一条；支持 a.b、arr[0].x）</label>
+                            <div class="input-wrap">
+                                <textarea id="field-paths" spellcheck="false">user.name
+name</textarea>
+                                <button type="button" class="clear-in" data-clear="field-paths" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-field-path">保存常用路径</label>
+                            <div class="split-inline path-input-row">
+                                <div class="input-wrap">
+                                    <input type="text" id="new-field-path" placeholder="例如 profile.avatar" autocomplete="off">
+                                    <button type="button" class="clear-in" data-clear="new-field-path" aria-label="清空" style="top:8px"><i class="fas fa-times"></i></button>
+                                </div>
+                                <button type="button" class="btn secondary" id="btn-add-json-path"><i class="fas fa-plus"></i> 添加</button>
+                            </div>
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:6px">提示：输入路径后也可按 <span class="kbd">Enter</span> 添加。</p>
+                        </div>
+                        <div class="form-group">
+                            <label>我的常用路径</label>
+                            <div class="multi-select" id="json-paths-multi-root">
+                                <div class="multi-trigger" id="json-paths-multi-trigger" tabindex="0" role="button" aria-expanded="false" aria-haspopup="listbox">
+                                    <span id="json-paths-multi-label">点击选择常用路径...</span>
+                                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                                </div>
+                                <div class="multi-panel" id="json-paths-multi-panel" role="listbox"></div>
+                            </div>
+                            <div class="tags" id="json-paths-selected-tags" aria-live="polite"></div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-extract-json"><i class="fas fa-play"></i> 提取</button>
+                            <button type="button" class="btn secondary" id="btn-copy-json-results"><i class="fas fa-copy"></i> 复制提取结果</button>
+                            <button type="button" class="btn ghost" id="btn-clear-json"><i class="fas fa-broom"></i> 清空</button>
+                        </div>
+                        <div id="json-results" class="result-box" aria-live="polite"></div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-circle-check"></i> 字段校验</h2>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px;">在左侧提取结果中为每条记录输入期望值，将高亮匹配/不一致（与展示值做字符串比较）。</p>
+                        <div id="verification-results" class="result-box">
+                            <span style="color:var(--text-secondary)">提取后在此汇总校验状态。</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="mixer-tab" class="tab-content" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-file-import"></i> 参考 Response <span class="hint">基准 / 正确包</span></h2>
+                        <div class="form-group">
+                            <label for="mixer-ref-input">Mixer JSON（支持数组或整包）</label>
+                            <div class="input-wrap">
+                                <textarea id="mixer-ref-input" placeholder='粘贴参考 mixer response，例如 [{ "adZoneId": 670, "templateType": "roll" }]' spellcheck="false" style="min-height:180px"></textarea>
+                                <button type="button" class="clear-in" data-clear="mixer-ref-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row" style="margin-top:0">
+                            <button type="button" class="btn secondary sm" id="btn-mixer-format-ref"><i class="fas fa-indent"></i> 格式化</button>
+                            <button type="button" class="btn secondary sm" id="btn-mixer-from-json"><i class="fas fa-arrow-up"></i> 从 JSON 页带入参考</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-file-export"></i> 待测 Response <span class="hint">实际抓包</span></h2>
+                        <div class="form-group">
+                            <label for="mixer-act-input">Mixer JSON</label>
+                            <div class="input-wrap">
+                                <textarea id="mixer-act-input" placeholder="粘贴待测 mixer response…" spellcheck="false" style="min-height:180px"></textarea>
+                                <button type="button" class="clear-in" data-clear="mixer-act-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row" style="margin-top:0">
+                            <button type="button" class="btn secondary sm" id="btn-mixer-format-act"><i class="fas fa-indent"></i> 格式化</button>
+                            <button type="button" class="btn ghost sm" id="btn-mixer-swap"><i class="fas fa-right-left"></i> 左右互换</button>
+                        </div>
+                    </div>
+                    <div class="card layout-span-2">
+                        <h2 class="card-title"><i class="fas fa-code-compare"></i> Mixer Response 对比 <span class="hint"><span class="kbd">⌘/Ctrl</span>+<span class="kbd">Enter</span></span></h2>
+                        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:8px">按<strong>广告块 / 数组项</strong>整段并排对比，差异行高亮。不再拆成单个字段。</p>
+                        <div class="decode-box" style="margin-top:0;padding-top:0;border-top:none;margin-bottom:12px">
+                            <h3 class="card-title" style="font-size:0.95rem;margin-bottom:10px"><i class="fas fa-server"></i> 双环境拉取（测试 IP / 线上 IP）</h3>
+                            <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px">把 Mixer URL 的 host 分别换成两个 IP 后请求，结果填入上方参考 / 待测。若在普通网页打开可能被 CORS 拦住；在扩展里打开通常可用。</p>
+                            <div class="form-group">
+                                <label for="mixer-live-url">Mixer URL</label>
+                                <div class="input-wrap">
+                                    <input type="text" id="mixer-live-url" placeholder="http://host/mixer?...">
+                                    <button type="button" class="clear-in" data-clear="mixer-live-url" aria-label="清空" style="top:8px"><i class="fas fa-times"></i></button>
+                                </div>
+                                <div id="mixer-url-error" style="color:var(--danger-color);font-size:0.78rem;margin-top:4px"></div>
+                            </div>
+                            <div class="split-inline" style="margin-bottom:10px">
+                                <div class="form-group" style="flex:1;margin-bottom:0">
+                                    <label for="mixer-test-ip">测试环境 IP</label>
+                                    <div class="input-wrap">
+                                        <input type="text" id="mixer-test-ip" placeholder="例如 192.168.1.1">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex:1;margin-bottom:0">
+                                    <label for="mixer-prod-ip">线上环境 IP</label>
+                                    <div class="input-wrap">
+                                        <input type="text" id="mixer-prod-ip" placeholder="例如 192.168.1.2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="btn-row" style="margin-top:0">
+                                <button type="button" class="btn secondary sm" id="btn-mixer-fetch"><i class="fas fa-cloud-arrow-down"></i> 拉取并填入</button>
+                            </div>
+                        </div>
+                        <div class="check-row">
+                            <label><input type="checkbox" id="mixer-only-diff" checked> 只看有差异的块</label>
+                            <label><input type="checkbox" id="mixer-align-ads" checked> 按广告位对齐数组</label>
+                            <label><input type="checkbox" id="mixer-ignore-vast" checked> 忽略 vastObject</label>
+                            <label><input type="checkbox" id="mixer-ignore-empty"> 忽略 emptyTracking</label>
+                            <label><input type="checkbox" id="mixer-ignore-noise"> 忽略动态噪声字段</label>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-mixer-compare"><i class="fas fa-magnifying-glass"></i> 比对</button>
+                            <button type="button" class="btn secondary" id="btn-copy-mixer"><i class="fas fa-copy"></i> 复制比对</button>
+                            <button type="button" class="btn ghost" id="btn-clear-mixer"><i class="fas fa-broom"></i> 清空</button>
+                        </div>
+                        <input type="search" class="filter-mini" id="mixer-filter" placeholder="筛选块：广告位、模版、路径…" style="margin-top:12px;display:none">
+                        <div id="mixer-summary" class="stat-bar"></div>
+                        <div id="mixer-results" class="result-box mixer-result" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="time-tab" class="tab-content" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-stopwatch"></i> 时长换算</h2>
+                        <div class="form-group">
+                            <label for="conversion-type">输入含义</label>
+                            <select id="conversion-type" class="conversion-select">
+                                <option value="minutes-to-hours-minutes">分钟 → 时分秒</option>
+                                <option value="minutes-to-minutes-seconds">分钟 → 分秒</option>
+                                <option value="hours-to-minutes-seconds">小时 → 分秒</option>
+                                <option value="seconds-to-minutes-seconds">秒 → 分秒</option>
+                                <option value="milliseconds-to-minutes-seconds">毫秒 → 分秒</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="output-format">输出格式</label>
+                            <select id="output-format" class="conversion-select">
+                                <option value="hms">时:分:秒</option>
+                                <option value="ms">分:秒</option>
+                                <option value="total_seconds">总秒数</option>
+                                <option value="total_milliseconds">总毫秒数</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-value">数值</label>
+                            <div class="input-wrap">
+                                <input type="number" id="input-value" placeholder="非负数字" min="0" step="any">
+                                <button type="button" class="clear-in" data-clear="input-value" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-convert-time"><i class="fas fa-rotate"></i> 转换</button>
+                            <button type="button" class="btn secondary" id="btn-copy-time"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <div id="time-conversion-result" class="result-box"></div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-hourglass-half"></i> Unix 时间戳</h2>
+                        <div class="form-group">
+                            <label for="timezone-select">显示时区</label>
+                            <select id="timezone-select" class="conversion-select">
+                                <option value="local">本地时区</option>
+                                <option value="UTC">UTC</option>
+                                <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+                                <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+                                <option value="America/New_York">America/New_York</option>
+                                <option value="America/Los_Angeles">America/Los_Angeles</option>
+                                <option value="Europe/London">Europe/London</option>
+                                <option value="Europe/Paris">Europe/Paris</option>
+                                <option value="Asia/Dubai">Asia/Dubai</option>
+                                <option value="Asia/Singapore">Asia/Singapore</option>
+                                <option value="Australia/Sydney">Australia/Sydney</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="timestamp-input">秒或毫秒时间戳</label>
+                            <div class="input-wrap">
+                                <input type="number" id="timestamp-input" placeholder="如 1700000000 或 1700000000000" step="any">
+                                <button type="button" class="clear-in" data-clear="timestamp-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="datetime-input">日期时间（转时间戳）</label>
+                            <div class="input-wrap">
+                                <input type="datetime-local" id="datetime-input">
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-convert-ts"><i class="fas fa-rotate"></i> 时间戳 → 时间</button>
+                            <button type="button" class="btn secondary" id="btn-date-to-ts"><i class="fas fa-calendar"></i> 日期 → 时间戳</button>
+                            <button type="button" class="btn secondary" id="btn-now-ts"><i class="fas fa-bolt"></i> 填入当前时间</button>
+                            <button type="button" class="btn ghost" id="btn-copy-ts"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <div id="timestamp-result" class="result-box"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="codec-tab" class="tab-content" role="tabpanel">
+                <div class="layout-grid">
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-key"></i> Base64</h2>
+                        <div class="form-group">
+                            <label for="b64-input">文本或 Base64</label>
+                            <div class="input-wrap">
+                                <textarea id="b64-input" placeholder="在此粘贴…" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" data-clear="b64-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="check-row">
+                            <label><input type="checkbox" id="b64-url-safe"> URL 安全模式（Base64URL）</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="b64-format">编码换行</label>
+                            <select id="b64-format" class="conversion-select">
+                                <option value="none">无换行（标准）</option>
+                                <option value="mime">MIME（每 76 字符）</option>
+                                <option value="pem">PEM（每 64 字符）</option>
+                            </select>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-b64-enc"><i class="fas fa-lock"></i> 编码</button>
+                            <button type="button" class="btn secondary" id="btn-b64-dec"><i class="fas fa-unlock"></i> 解码</button>
+                            <button type="button" class="btn ghost" id="btn-b64-copy"><i class="fas fa-copy"></i> 复制输出</button>
+                        </div>
+                        <div id="b64-output" class="result-box" aria-live="polite"></div>
+                    </div>
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-link"></i> 查询串快速编码</h2>
+                        <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px;">将普通文本进行 encodeURIComponent / decodeURIComponent，便于拼接 URL。</p>
+                        <div class="form-group">
+                            <label for="enc-input">内容</label>
+                            <div class="input-wrap">
+                                <textarea id="enc-input" spellcheck="false"></textarea>
+                                <button type="button" class="clear-in" data-clear="enc-input" aria-label="清空"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button type="button" class="btn" id="btn-uri-enc"><i class="fas fa-arrow-right"></i> encode</button>
+                            <button type="button" class="btn secondary" id="btn-uri-dec"><i class="fas fa-arrow-left"></i> decode</button>
+                            <button type="button" class="btn ghost" id="btn-uri-copy"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <div id="enc-output" class="result-box" aria-live="polite"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="custom-params-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-params">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 id="modal-title-params">管理自定义 URL 参数名</h3>
+                <button type="button" class="close-x" data-close-modal="custom-params-modal" aria-label="关闭">&times;</button>
+            </div>
+            <div class="split-inline" style="margin-bottom:12px">
+                <div class="input-wrap">
+                    <input type="text" id="new-param-name" placeholder="参数名，如 custom_id" autocomplete="off">
+                </div>
+                <button type="button" class="btn" id="btn-modal-add-param"><i class="fas fa-plus"></i> 添加</button>
+            </div>
+            <ul id="saved-custom-params-list" style="list-style:none"></ul>
+            <div class="btn-row" style="margin-top:16px">
+                <button type="button" class="btn secondary" id="btn-modal-cancel">关闭</button>
+                <button type="button" class="btn" id="btn-modal-done">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <footer>
+        暖风智能数据解析 · 本地运行，数据不上传 · © 2026
+    </footer>
+
+    <script>
+(function () {
+    'use strict';
+
+    const STORAGE = {
+        theme: 'selectedTheme',
+        wallpaper: 'customWallpaper',
+        urlParams: 'customUrlParams',
+        jsonFields: 'customJsonFields',
+        urlMulti: 'urlMultiSelection'
+    };
+
+    const themes = {
+        blue: { '--primary-color': '#4361ee', '--secondary-color': '#3730a3', '--background-color': '#f1f5f9', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#e2e8f0' },
+        green: { '--primary-color': '#16a34a', '--secondary-color': '#15803d', '--background-color': '#ecfdf5', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#bbf7d0' },
+        purple: { '--primary-color': '#9333ea', '--secondary-color': '#7e22ce', '--background-color': '#faf5ff', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#e9d5ff' },
+        red: { '--primary-color': '#dc2626', '--secondary-color': '#b91c1c', '--background-color': '#fef2f2', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#fecaca' },
+        orange: { '--primary-color': '#ea580c', '--secondary-color': '#c2410c', '--background-color': '#fff7ed', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#fed7aa' },
+        teal: { '--primary-color': '#0d9488', '--secondary-color': '#0f766e', '--background-color': '#f0fdfa', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#99f6e4' },
+        indigo: { '--primary-color': '#4f46e5', '--secondary-color': '#4338ca', '--background-color': '#eef2ff', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#c7d2fe' },
+        pink: { '--primary-color': '#db2777', '--secondary-color': '#be185d', '--background-color': '#fdf2f8', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#fbcfe8' },
+        yellow: { '--primary-color': '#ca8a04', '--secondary-color': '#a16207', '--background-color': '#fefce8', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#fde047' },
+        gray: { '--primary-color': '#4b5563', '--secondary-color': '#374151', '--background-color': '#f9fafb', '--surface-color': '#ffffff', '--text-primary': '#0f172a', '--text-secondary': '#64748b', '--border-color': '#e5e7eb' },
+        dark: { '--primary-color': '#818cf8', '--secondary-color': '#6366f1', '--background-color': '#0f172a', '--surface-color': '#1e293b', '--text-primary': '#f1f5f9', '--text-secondary': '#94a3b8', '--border-color': '#334155' }
+    };
+
+    const WALLPAPER_PRESETS = [
+        { group: '', items: [
+            { value: '', label: '无背景（纯色）' },
+            { value: '__custom__', label: '自定义图片 URL…' }
+        ]},
+        { group: '风景', items: [
+            { value: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1920&auto=format&fit=crop', label: '森林晨雾' },
+            { value: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop', label: '山川湖泊' },
+            { value: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop', label: '自然风光' },
+            { value: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=1920&auto=format&fit=crop', label: '旷野黄昏' },
+            { value: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1920&auto=format&fit=crop', label: '雨雾山路' }
+        ]},
+        { group: '唯美人像 · 壁纸向', items: [
+            { value: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1920&auto=format&fit=crop', label: '人像 01' },
+            { value: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1920&auto=format&fit=crop', label: '人像 02' },
+            { value: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=1920&auto=format&fit=crop', label: '人像 03' },
+            { value: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1920&auto=format&fit=crop', label: '人像 04' },
+            { value: 'https://images.unsplash.com/photo-1501196354998-c01151cb59f1?q=80&w=1920&auto=format&fit=crop', label: '人像 05' },
+            { value: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1920&auto=format&fit=crop', label: '人像 06' },
+            { value: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1920&auto=format&fit=crop', label: '人像 07' },
+            { value: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1920&auto=format&fit=crop', label: '人像 08' },
+            { value: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?q=80&w=1920&auto=format&fit=crop', label: '人像 09' },
+            { value: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1920&auto=format&fit=crop', label: '人像 10' },
+            { value: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1920&auto=format&fit=crop', label: '人像 11' },
+            { value: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=1920&auto=format&fit=crop', label: '人像 12' },
+            { value: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1920&auto=format&fit=crop', label: '人像 13' },
+            { value: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=1920&auto=format&fit=crop', label: '人像 14' },
+            { value: 'https://images.unsplash.com/photo-1509967419530-da38b470cbc6?q=80&w=1920&auto=format&fit=crop', label: '人像 15' },
+            { value: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1920&auto=format&fit=crop', label: '人像 16' },
+            { value: 'https://images.unsplash.com/photo-1508214751196-bcfd4fe60ef2?q=80&w=1920&auto=format&fit=crop', label: '人像 17' },
+            { value: 'https://images.unsplash.com/photo-1499557354967-3b2a8c3f24d0?q=80&w=1920&auto=format&fit=crop', label: '人像 18' },
+            { value: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop', label: '人像 19' },
+            { value: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1920&auto=format&fit=crop', label: '人像 20' },
+            { value: 'https://images.unsplash.com/photo-1503104834685-7205e663f27f?q=80&w=1920&auto=format&fit=crop', label: '人像 21' },
+            { value: 'https://images.unsplash.com/photo-1485893086445-ed75865251e7?q=80&w=1920&auto=format&fit=crop', label: '人像 22' },
+            { value: 'https://images.unsplash.com/photo-1504439904031-93ded9f93e3e?q=80&w=1920&auto=format&fit=crop', label: '人像 23' },
+            { value: 'https://images.unsplash.com/photo-1526510747491-58f928ec870f?q=80&w=1920&auto=format&fit=crop', label: '人像 24' },
+            { value: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?q=80&w=1920&auto=format&fit=crop', label: '人像 25' },
+            { value: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1920&auto=format&fit=crop', label: '人像 26' },
+            { value: 'https://images.unsplash.com/photo-1504593811423-6dd137756598?q=80&w=1920&auto=format&fit=crop', label: '人像 27' },
+            { value: 'https://images.unsplash.com/photo-1525182008055-f88b95ff7980?q=80&w=1920&auto=format&fit=crop', label: '人像 28' }
+        ]}
+    ];
+
+    const PRESET_URL_PARAMS = ['ee', 'dvi', 'e', 'rid', 'user_ip', 'utm_source', 'utm_medium', 'utm_campaign', 'id', 'ref'];
+    const URL_MULTI_ALL = '';
+
+    let modalSnapshotUrlParams = null;
+    let lastUrlResultText = '';
+    let lastCompareText = '';
+    let lastTimeText = '';
+    let lastTsText = '';
+    let lastB64Text = '';
+    let lastEncText = '';
+    let lastDecodeText = '';
+    let lastSdkRespText = '';
+    const UNION_E_KEY = 'e84584df1113ff82bccbdfef9b69c2f3';
+    const sdkValueStore = Object.create(null);
+    let sdkStoreSeq = 0;
+    /** @type {Record<string,string>} */
+    let lastUrlParamValues = {};
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    function safeJsonParse(s, fallback) {
+        try { return JSON.parse(s); } catch { return fallback; }
+    }
+
+    function safeJsonParseArray(s, fallback = []) {
+        const v = safeJsonParse(s, null);
+        return Array.isArray(v) ? v : fallback;
+    }
+
+    let customUrlParams = safeJsonParseArray(localStorage.getItem(STORAGE.urlParams));
+    let customJsonFields = safeJsonParseArray(localStorage.getItem(STORAGE.jsonFields));
+    /** @type {string[]} */
+    let selectedUrlParams = safeJsonParseArray(localStorage.getItem(STORAGE.urlMulti));
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(s) {
+        return escapeHtml(s).replace(/\n/g, '&#10;');
+    }
+
+    let toastTimer = null;
+    function toast(msg, ok = true) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.style.background = ok ? 'var(--text-primary)' : 'var(--danger-color)';
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast('已复制到剪贴板');
+        } catch {
+            toast('复制失败，请手动选择复制', false);
+        }
+    }
+
+    function normalizeUrlInput(raw) {
+        const t = raw.trim();
+        if (!t) return t;
+        if (!/^https?:\/\//i.test(t)) return 'https://' + t;
+        return t;
+    }
+
+    function applyTheme(name) {
+        const t = themes[name] || themes.blue;
+        Object.entries(t).forEach(([k, v]) => root.style.setProperty(k, v));
+        localStorage.setItem(STORAGE.theme, name);
+        body.classList.toggle('dark-surface', name === 'dark');
+    }
+
+    function setBackgroundByValue(val) {
+        if (!val) {
+            body.style.backgroundImage = '';
+            body.classList.remove('has-bg');
+            localStorage.removeItem(STORAGE.wallpaper);
+            return;
+        }
+        body.style.backgroundImage = `url('${val.replace(/'/g, '%27')}')`;
+        body.classList.add('has-bg');
+        localStorage.setItem(STORAGE.wallpaper, val);
+    }
+
+    function buildWallpaperSelect() {
+        const sel = document.getElementById('wallpaper-input');
+        sel.innerHTML = '';
+        const saved = localStorage.getItem(STORAGE.wallpaper) || '';
+        const allKnown = new Set();
+        WALLPAPER_PRESETS.forEach(group => {
+            if (!group.group) {
+                group.items.forEach(w => {
+                    allKnown.add(w.value);
+                    const o = document.createElement('option');
+                    o.value = w.value;
+                    o.textContent = w.label;
+                    sel.appendChild(o);
+                });
+            } else {
+                const og = document.createElement('optgroup');
+                og.label = group.group;
+                group.items.forEach(w => {
+                    allKnown.add(w.value);
+                    const o = document.createElement('option');
+                    o.value = w.value;
+                    o.textContent = w.label;
+                    og.appendChild(o);
+                });
+                sel.appendChild(og);
+            }
+        });
+        const known = allKnown.has(saved);
+        if (saved && !known && saved !== '__custom__') {
+            const o = document.createElement('option');
+            o.value = saved;
+            o.textContent = '已保存的自定义背景';
+            sel.appendChild(o);
+        }
+        const hasVal = saved && Array.from(sel.options).some(o => o.value === saved);
+        sel.value = hasVal ? saved : '';
+    }
+
+    function initThemeSelect() {
+        const sel = document.getElementById('theme-select');
+        const labels = { blue: '蓝色', green: '绿色', purple: '紫色', red: '红色', orange: '橙色', teal: '青色', indigo: '靛蓝', pink: '粉色', yellow: '黄色', gray: '灰色', dark: '深色' };
+        sel.innerHTML = '';
+        Object.keys(labels).forEach(k => {
+            const o = document.createElement('option');
+            o.value = k;
+            o.textContent = labels[k];
+            sel.appendChild(o);
+        });
+        const saved = localStorage.getItem(STORAGE.theme) || 'blue';
+        sel.value = themes[saved] ? saved : 'blue';
+        applyTheme(sel.value);
+        sel.addEventListener('change', () => applyTheme(sel.value));
+    }
+
+    document.getElementById('wallpaper-input').addEventListener('change', (e) => {
+        const v = e.target.value;
+        if (v === '__custom__') {
+            const u = prompt('请输入图片 URL：');
+            if (u && u.trim()) {
+                const url = u.trim();
+                const sel = e.target;
+                let opt = Array.from(sel.options).find(o => o.value === url);
+                if (!opt) {
+                    opt = document.createElement('option');
+                    opt.value = url;
+                    opt.textContent = '自定义: ' + (url.length > 40 ? url.slice(0, 40) + '…' : url);
+                    sel.appendChild(opt);
+                }
+                sel.value = url;
+                setBackgroundByValue(url);
+            } else {
+                e.target.value = '';
+                setBackgroundByValue('');
+            }
+        } else {
+            setBackgroundByValue(v);
+        }
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.toggle('active', s.id === id));
+            document.querySelectorAll('.tab-button').forEach(b => {
+                const on = b === btn;
+                b.classList.toggle('active', on);
+                b.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            
+        });
+    });
+
+    
+    // Clear buttons
+    document.querySelectorAll('[data-clear]').forEach(b => {
+        b.addEventListener('click', () => {
+            const id = b.getAttribute('data-clear');
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    });
+
+    // URL multi-select (delegation + dynamic options)
+    const urlPanel = document.getElementById('url-multi-panel');
+    const urlTrigger = document.getElementById('url-multi-trigger');
+    const urlMultiLabel = document.getElementById('url-multi-label');
+    const urlTags = document.getElementById('url-selected-tags');
+
+    function persistUrlSelection() {
+        localStorage.setItem(STORAGE.urlMulti, JSON.stringify(selectedUrlParams));
+    }
+
+    function renderUrlMultiPanel() {
+        urlPanel.innerHTML = '';
+        const mk = (value, text, extraClass, isCustom = false) => {
+            const d = document.createElement('div');
+            d.className = 'multi-opt' + (extraClass ? ' ' + extraClass : '');
+            d.dataset.value = value;
+            if (isCustom) {
+                d.innerHTML = `<span class="opt-text">${escapeHtml(text)}</span><button type="button" class="opt-delete" title="删除" aria-label="删除"><i class="fas fa-trash"></i></button>`;
+                // 删除按钮事件
+                d.querySelector('.opt-delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    customUrlParams = customUrlParams.filter(p => p !== value);
+                    selectedUrlParams = selectedUrlParams.filter(p => p !== value);
+                    localStorage.setItem(STORAGE.urlParams, JSON.stringify(customUrlParams));
+                    persistUrlSelection();
+                    renderUrlMultiPanel();
+                    renderUrlTags();
+                    updateUrlMultiLabel();
+                    toast('已删除参数');
+                });
+            } else {
+                d.textContent = text;
+            }
+            if (selectedUrlParams.includes(value)) d.classList.add('selected');
+            urlPanel.appendChild(d);
+        };
+        mk(URL_MULTI_ALL, '全部参数', '');
+        PRESET_URL_PARAMS.forEach(p => mk(p, p, ''));
+        customUrlParams.forEach(p => mk(p, p, '', true));
+        mk('__manage__', '管理自定义参数…', 'manage');
+    }
+
+    function updateUrlMultiLabel() {
+        if (selectedUrlParams.includes(URL_MULTI_ALL)) {
+            urlMultiLabel.textContent = '已选：全部参数';
+        } else if (selectedUrlParams.length === 0) {
+            urlMultiLabel.textContent = '未选择：解析时将显示全部参数';
+        } else if (selectedUrlParams.length === 1) {
+            urlMultiLabel.textContent = '已选：' + selectedUrlParams[0];
+        } else {
+            urlMultiLabel.textContent = '已选 ' + selectedUrlParams.length + ' 个参数';
+        }
+    }
+
+    function renderUrlTags() {
+        urlTags.innerHTML = '';
+        selectedUrlParams.forEach(p => {
+            if (p === URL_MULTI_ALL) return;
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.textContent = p + ' ';
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.innerHTML = '<i class="fas fa-times"></i>';
+            rm.addEventListener('click', () => {
+                selectedUrlParams = selectedUrlParams.filter(x => x !== p);
+                syncUrlMultiSelectedClasses();
+                renderUrlTags();
+                updateUrlMultiLabel();
+                persistUrlSelection();
+            });
+            tag.appendChild(rm);
+            urlTags.appendChild(tag);
+        });
+        updateUrlMultiLabel();
+    }
+
+    function syncUrlMultiSelectedClasses() {
+        urlPanel.querySelectorAll('.multi-opt').forEach(el => {
+            const v = el.dataset.value;
+            el.classList.toggle('selected', v && selectedUrlParams.includes(v));
+        });
+    }
+
+    urlPanel.addEventListener('click', (e) => {
+        const opt = e.target.closest('.multi-opt');
+        if (!opt) return;
+        const value = opt.dataset.value;
+        if (value === '__manage__') {
+            openParamsModal();
+            urlPanel.classList.remove('open');
+            urlTrigger.setAttribute('aria-expanded', 'false');
+            return;
+        }
+        if (value === URL_MULTI_ALL) {
+            if (selectedUrlParams.includes(URL_MULTI_ALL)) {
+                selectedUrlParams = [];
+            } else {
+                selectedUrlParams = [URL_MULTI_ALL];
+            }
+        } else {
+            selectedUrlParams = selectedUrlParams.filter(x => x !== URL_MULTI_ALL);
+            if (selectedUrlParams.includes(value)) {
+                selectedUrlParams = selectedUrlParams.filter(x => x !== value);
+            } else {
+                selectedUrlParams.push(value);
+            }
+        }
+        syncUrlMultiSelectedClasses();
+        renderUrlTags();
+        persistUrlSelection();
+    });
+
+    function toggleUrlPanel() {
+        const open = urlPanel.classList.toggle('open');
+        urlTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    urlTrigger.addEventListener('click', (e) => { e.stopPropagation(); toggleUrlPanel(); });
+    urlTrigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleUrlPanel(); }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('url-multi-root').contains(e.target)) {
+            urlPanel.classList.remove('open');
+            urlTrigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    function xorLatin1(binStr, key) {
+        if (!binStr || !key) return '';
+        let result = '';
+        for (let i = 0; i < binStr.length; i++) {
+            result += String.fromCharCode(binStr.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        try { return decodeURIComponent(escape(result)); } catch { return result; }
+    }
+
+    function base64UrlSafeDecode(str) {
+        let base64 = String(str).replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        return decodeURIComponent(escape(atob(base64)));
+    }
+
+    function tryAtobUtf8(str) {
+        const compact = String(str).replace(/\s/g, '');
+        let b64 = compact.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const bin = atob(b64);
+        try { return decodeURIComponent(escape(bin)); } catch { return bin; }
+    }
+
+    function getRidFromParams(params) {
+        return String((params && (params.rid || params.RID)) || lastUrlParamValues.rid || lastUrlParamValues.RID || '').trim();
+    }
+
+    function tryUnionDecrypt(key, value, rid, level) {
+        const k = String(key || '').toLowerCase();
+        const raw = String(value || '').trim();
+        if (!raw) return null;
+        try {
+            if (k === 'dvi') {
+                return { text: base64UrlSafeDecode(raw), steps: ['Base64URL'] };
+            }
+            if (k === 'ee') {
+                if (!rid || rid.length < 20) return { error: '缺少 rid，无法 XOR 解密 ee' };
+                return { text: xorLatin1(atob(raw), rid.slice(-20)), steps: ['Base64', 'XOR(rid后20位)'] };
+            }
+            if (k === 'e' && level >= 1) {
+                return { text: xorLatin1(atob(raw), UNION_E_KEY), steps: ['Base64', 'XOR(固定密钥)'] };
+            }
+        } catch (e) {
+            return { error: '解密失败：' + (e.message || e) };
+        }
+        return null;
+    }
+
+    function parseQueryPairs(text) {
+        const obj = {};
+        String(text || '').split('&').forEach(pair => {
+            if (!pair) return;
+            const eq = pair.indexOf('=');
+            const k = eq >= 0 ? pair.slice(0, eq) : pair;
+            const v = eq >= 0 ? pair.slice(eq + 1) : '';
+            if (!k) return;
+            try { obj[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' ')); }
+            catch { obj[k] = v; }
+        });
+        return obj;
+    }
+
+    function storeSdkVal(v) {
+        const id = 'v' + (++sdkStoreSeq);
+        sdkValueStore[id] = v;
+        return id;
+    }
+
+    function tryDecodeTrackingPayload(raw, paramKey) {
+        const steps = [];
+        let s = String(raw).trim();
+        const rid = getRidFromParams(lastUrlParamValues);
+        const union = tryUnionDecrypt(paramKey, s, rid, paramKey === 'e' ? 1 : 0);
+        if (union && union.error) return { text: union.error, steps: ['联盟解密失败'] };
+        if (union && union.text != null) {
+            s = union.text;
+            steps.push(...union.steps);
+        } else {
+            for (let round = 0; round < 8; round++) {
+                let changed = false;
+                try {
+                    const t = decodeURIComponent(s.replace(/\+/g, '%20'));
+                    if (t !== s) { s = t; steps.push('URL解码'); changed = true; }
+                } catch { break; }
+                if (!changed) break;
+            }
+            const compact = s.replace(/\s/g, '');
+            if (/^[A-Za-z0-9+/=_-]+$/.test(compact) && compact.length >= 8) {
+                try {
+                    s = tryAtobUtf8(compact);
+                    steps.push('Base64→UTF-8');
+                } catch { /* 非 Base64 */ }
+            }
+        }
+        try {
+            const j = JSON.parse(s);
+            s = JSON.stringify(j, null, 2);
+            steps.push('JSON 美化');
+        } catch { /* 非 JSON */ }
+        if (!steps.length) steps.push('（未识别编码链，原样展示）');
+        return { text: s, steps };
+    }
+
+    function runDecodePipeline(paramKey) {
+        let raw = document.getElementById('decode-input').value.trim();
+        const kv = raw.match(/^([a-zA-Z0-9_]+)=(.+)$/);
+        if (kv) {
+            if (!paramKey) paramKey = kv[1];
+            raw = kv[2].trim();
+            document.getElementById('decode-input').value = raw;
+        }
+        const out = document.getElementById('decode-output');
+        const stepsEl = document.getElementById('decode-steps');
+        if (!raw) { toast('请先粘贴密文', false); return; }
+        const r = tryDecodeTrackingPayload(raw, paramKey);
+        lastDecodeText = r.text;
+        out.innerHTML = '<pre style="white-space:pre-wrap;margin:0;font:inherit;max-height:42vh;overflow:auto">' + escapeHtml(r.text) + '</pre>';
+        stepsEl.textContent = '处理链：' + r.steps.join(' → ');
+        toast('解密完成');
+    }
+
+    document.getElementById('parsed-results').addEventListener('click', (e) => {
+        const dec = e.target.closest('.decrypt-row');
+        if (dec) {
+            const key = dec.getAttribute('data-param');
+            const v = lastUrlParamValues[key] ?? '';
+            document.getElementById('decode-input').value = v;
+            runDecodePipeline(key);
+            document.getElementById('decode-output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+        const cp = e.target.closest('.copy-one');
+        if (cp) copyText(cp.getAttribute('data-copy') || '');
+    });
+
+    function parseUrlAction() {
+        const raw = document.getElementById('url-input').value;
+        if (!raw.trim()) { toast('请先输入 URL', false); return; }
+        const urlStr = normalizeUrlInput(raw);
+        try {
+            const url = new URL(urlStr);
+            const sp = new URLSearchParams(url.search);
+            const results = document.getElementById('parsed-results');
+            const lines = [];
+            let html = '';
+            lastUrlParamValues = {};
+
+            const appendRow = (k, v) => {
+                lastUrlParamValues[k] = v;
+                const line = k + '=' + v;
+                lines.push(line);
+                html += '<div class="result-row" data-param="' + escapeAttr(k) + '"><div class="row-head"><strong>' + escapeHtml(k) + '</strong><span style="display:flex;gap:6px;flex-shrink:0">';
+                html += '<button type="button" class="btn secondary sm copy-one" data-copy="' + escapeAttr(v) + '"><i class="fas fa-copy"></i></button>';
+                html += '<button type="button" class="btn sm decrypt-row" data-param="' + escapeAttr(k) + '"><i class="fas fa-unlock-keyhole"></i> 解密</button>';
+                html += '</span></div><div>' + escapeHtml(v) + '</div></div>';
+            };
+
+            if (selectedUrlParams.includes(URL_MULTI_ALL) || selectedUrlParams.length === 0) {
+                for (const [k, v] of sp) appendRow(k, v);
+            } else {
+                selectedUrlParams.forEach(param => {
+                    const v = sp.get(param);
+                    appendRow(param, v === null ? '' : v);
+                });
+            }
+
+            if (!html) html = '<div class="result-row warn">无查询参数</div>';
+            results.innerHTML = '<div style="font-weight:700;margin-bottom:8px">查询参数</div>' + html;
+            lastUrlResultText = lines.join('\n');
+            toast('解析完成');
+        } catch (err) {
+            toast('URL 无效：' + err.message, false);
+        }
+    }
+
+    function urlComponentsAction() {
+        const raw = document.getElementById('url-input').value;
+        if (!raw.trim()) { toast('请先输入 URL', false); return; }
+        try {
+            const u = new URL(normalizeUrlInput(raw));
+            const box = document.getElementById('parsed-results');
+            const rows = [
+                ['协议', u.protocol],
+                ['主机', u.host],
+                ['路径', u.pathname],
+                ['哈希', u.hash || '(无)'],
+                ['原始查询', u.search || '(无)']
+            ];
+            box.innerHTML = '<div style="font-weight:700;margin-bottom:8px">结构概要</div>' +
+                rows.map(([a, b]) => '<div class="result-row"><strong>' + escapeHtml(a) + '</strong><div>' + escapeHtml(b) + '</div></div>').join('');
+            lastUrlResultText = rows.map(([a, b]) => a + ': ' + b).join('\n');
+            toast('已生成结构概要');
+        } catch (e) {
+            toast('URL 无效：' + e.message, false);
+        }
+    }
+
+    function compareUrlsAction() {
+        const a = document.getElementById('url-input').value.trim();
+        const b = document.getElementById('correct-url-input').value.trim();
+        if (!a || !b) { toast('请填写待比较与参考 URL', false); return; }
+        try {
+            const ua = new URL(normalizeUrlInput(a));
+            const ub = new URL(normalizeUrlInput(b));
+            const pa = new URLSearchParams(ua.search);
+            const pb = new URLSearchParams(ub.search);
+            const keys = new Set([...pa.keys(), ...pb.keys()]);
+            const lines = [];
+            let html = '<div style="font-weight:700;margin-bottom:8px">比对结果</div>';
+            const hostSame = ua.host === ub.host;
+            html += '<div class="result-row ' + (hostSame ? 'match' : 'warn') + '"><strong>域名</strong> <small>(' + (hostSame ? '一致' : '不一致') + ')</small>' +
+                '<div>左: ' + escapeHtml(ua.origin + ua.pathname) + '</div><div>右: ' + escapeHtml(ub.origin + ub.pathname) + '</div></div>';
+            lines.push('域名: 左=' + ua.origin + ua.pathname + ' 右=' + ub.origin + ub.pathname);
+            for (const key of keys) {
+                const va = pa.get(key);
+                const vb = pb.get(key);
+                let cls = 'result-row';
+                let status = '';
+                if (va === null) { cls += ' err'; status = '左侧缺失'; }
+                else if (vb === null) { cls += ' err'; status = '右侧缺失'; }
+                else if (va !== vb) { cls += ' warn'; status = '不一致'; }
+                else { cls += ' match'; status = '一致'; }
+                const line = key + ': 左=' + (va ?? '') + ' 右=' + (vb ?? '') + ' [' + status + ']';
+                lines.push(line);
+                html += '<div class="' + cls + '"><strong>' + escapeHtml(key) + '</strong> <small>(' + escapeHtml(status) + ')</small><div>左: ' + escapeHtml(va ?? '') + '</div><div>右: ' + escapeHtml(vb ?? '') + '</div></div>';
+            }
+            document.getElementById('comparison-results').innerHTML = html || '<div class="result-row">无查询参数可比对</div>';
+            lastCompareText = lines.join('\n');
+            toast('比对完成');
+        } catch (e) {
+            toast('URL 无效：' + e.message, false);
+        }
+    }
+
+    function clearUrlTab() {
+        ['url-input', 'correct-url-input', 'decode-input'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        selectedUrlParams = [];
+        persistUrlSelection();
+        renderUrlMultiPanel();
+        renderUrlTags();
+        document.getElementById('parsed-results').innerHTML = '';
+        document.getElementById('comparison-results').innerHTML = '';
+        document.getElementById('decode-output').innerHTML = '';
+        const st = document.getElementById('decode-steps');
+        if (st) st.textContent = '';
+        lastUrlParamValues = {};
+        lastUrlResultText = '';
+        lastCompareText = '';
+        lastDecodeText = '';
+    }
+
+    document.getElementById('btn-parse-url').addEventListener('click', parseUrlAction);
+    document.getElementById('btn-url-components').addEventListener('click', urlComponentsAction);
+    document.getElementById('btn-compare-url').addEventListener('click', compareUrlsAction);
+    document.getElementById('btn-clear-url').addEventListener('click', clearUrlTab);
+    document.getElementById('btn-decode-run').addEventListener('click', runDecodePipeline);
+    document.getElementById('btn-decode-from-url').addEventListener('click', () => {
+        const keys = Object.keys(lastUrlParamValues);
+        if (keys.length === 0) { toast('请先在上方解析 URL', false); return; }
+        
+        // 优先尝试常见加密参数
+        const priorityKeys = ['ee', 'e', 'user_ip', 'f', 'g', 's', 'security_code'];
+        let selectedKey = '';
+        for (const k of priorityKeys) {
+            if (lastUrlParamValues[k]) { selectedKey = k; break; }
+        }
+        
+        // 如果没有优先参数，使用第一个参数
+        if (!selectedKey) selectedKey = keys[0];
+        
+        const v = lastUrlParamValues[selectedKey];
+        document.getElementById('decode-input').value = v;
+        runDecodePipeline(selectedKey);
+        toast(`已提取参数 "${selectedKey}" 的值`);
+    });
+    document.getElementById('btn-decode-copy').addEventListener('click', () => {
+        if (!lastDecodeText) { toast('请先解密', false); return; }
+        copyText(lastDecodeText);
+    });
+    document.getElementById('btn-copy-url-results').addEventListener('click', () => {
+        if (!lastUrlResultText) { toast('暂无可复制内容', false); return; }
+        copyText(lastUrlResultText);
+    });
+    document.getElementById('btn-copy-compare').addEventListener('click', () => {
+        if (!lastCompareText) { toast('请先执行比对', false); return; }
+        copyText(lastCompareText);
+    });
+
+    function parseUrlQueryLoose(url) {
+        const q = String(url).split('?')[1] || '';
+        return parseQueryPairs(q);
+    }
+
+    function renderJsonTree(value, key, level) {
+        const wrap = document.createElement('div');
+        wrap.className = 'jv-item';
+        if (key != null) {
+            const ks = document.createElement('span');
+            ks.className = 'jv-key';
+            ks.textContent = '"' + key + '": ';
+            wrap.appendChild(ks);
+        }
+        if (value !== null && typeof value === 'object') {
+            const isArr = Array.isArray(value);
+            const toggle = document.createElement('span');
+            toggle.className = 'jv-toggle';
+            toggle.textContent = isArr ? '[−]' : '{−}';
+            wrap.appendChild(toggle);
+            const children = document.createElement('div');
+            children.className = 'jv-children';
+            if (isArr) {
+                value.forEach((item, i) => children.appendChild(renderJsonTree(item, String(i), level + 1)));
+            } else {
+                Object.keys(value).forEach(k => children.appendChild(renderJsonTree(value[k], k, level + 1)));
+            }
+            wrap.appendChild(children);
+            if (level > 0) {
+                wrap.classList.add('jv-collapsed');
+                toggle.textContent = isArr ? '[+]' : '{+}';
+            }
+            toggle.addEventListener('click', () => {
+                wrap.classList.toggle('jv-collapsed');
+                const collapsed = wrap.classList.contains('jv-collapsed');
+                toggle.textContent = collapsed ? (isArr ? '[+]' : '{+}') : (isArr ? '[−]' : '{−}');
+            });
+            return wrap;
+        }
+        const span = document.createElement('span');
+        if (typeof value === 'string') { span.className = 'jv-string'; span.textContent = JSON.stringify(value); }
+        else if (typeof value === 'number') { span.className = 'jv-number'; span.textContent = String(value); }
+        else if (typeof value === 'boolean') { span.className = 'jv-boolean'; span.textContent = String(value); }
+        else { span.className = 'jv-null'; span.textContent = 'null'; }
+        wrap.appendChild(span);
+        return wrap;
+    }
+
+    function renderUnionParamList(params, container, rid, level) {
+        const keys = Object.keys(params).sort();
+        keys.forEach(key => {
+            const row = document.createElement('div');
+            row.className = 'sdk-param';
+            const kEl = document.createElement('div');
+            kEl.className = 'sdk-param-key';
+            kEl.textContent = key;
+            const right = document.createElement('div');
+            right.className = 'sdk-param-right';
+            const vEl = document.createElement('div');
+            vEl.className = 'sdk-param-value';
+            const decryptable = key === 'dvi' || key === 'ee' || (key === 'e' && level >= 1);
+            if (decryptable) {
+                vEl.classList.add('clickable');
+                vEl.textContent = params[key] + '（点击解密）';
+                const sid = storeSdkVal(params[key]);
+                vEl.setAttribute('data-sdk-dec', sid);
+                vEl.setAttribute('data-sdk-key', key);
+                vEl.setAttribute('data-sdk-rid', rid);
+                vEl.setAttribute('data-sdk-level', String(level));
+            } else {
+                vEl.textContent = params[key];
+            }
+            right.appendChild(vEl);
+            row.appendChild(kEl);
+            row.appendChild(right);
+            container.appendChild(row);
+        });
+    }
+
+    function showUnionDecrypted(text, host, rid, level) {
+        host.innerHTML = '';
+        const nested = document.createElement('div');
+        nested.className = 'sdk-nested';
+        const trimmed = String(text || '').trim();
+        try {
+            const json = JSON.parse(trimmed);
+            nested.appendChild(renderJsonTree(json, null, 0));
+            host.appendChild(nested);
+            return;
+        } catch { /* not json */ }
+        if (trimmed.includes('=') && trimmed.includes('&')) {
+            renderUnionParamList(parseQueryPairs(trimmed), nested, rid, level + 1);
+            host.appendChild(nested);
+            return;
+        }
+        const pre = document.createElement('pre');
+        pre.style.cssText = 'white-space:pre-wrap;margin:0;font:inherit';
+        pre.textContent = trimmed;
+        nested.appendChild(pre);
+        host.appendChild(nested);
+    }
+
+    function runUnionSdkDecrypt() {
+        const url = document.getElementById('sdk-url-input').value.trim();
+        const msg = document.getElementById('sdk-url-msg');
+        const box = document.getElementById('sdk-params');
+        const respBox = document.getElementById('sdk-response');
+        const encResp = document.getElementById('sdk-resp-input').value.trim();
+        msg.textContent = '';
+        box.innerHTML = '';
+        respBox.innerHTML = '';
+        lastSdkRespText = '';
+        if (!url) { msg.textContent = '请输入带参数的 URL'; toast('请输入 URL', false); return; }
+        const params = parseUrlQueryLoose(url);
+        const rid = params.rid || params.RID || '';
+        if (!rid) { msg.textContent = '缺少 rid 参数，ee / 响应 XOR 需要它'; }
+        if (!Object.keys(params).length) { msg.textContent = '未解析到查询参数'; toast('没有参数', false); return; }
+        lastUrlParamValues = Object.assign({}, lastUrlParamValues, params);
+        renderUnionParamList(params, box, rid, 0);
+        if (encResp) {
+            try {
+                if (!rid || rid.length < 20) throw new Error('rid 不足 20 位');
+                const decrypted = xorLatin1(atob(encResp.replace(/\s/g, '')), rid.slice(-20));
+                lastSdkRespText = decrypted;
+                const json = JSON.parse(decrypted);
+                respBox.appendChild(renderJsonTree(json, null, 0));
+                toast('请求与响应均已解密');
+            } catch (e) {
+                respBox.innerHTML = '<div class="result-row err">响应解密失败：' + escapeHtml(e.message || String(e)) + '</div>';
+                toast('响应解密失败', false);
+            }
+        } else {
+            toast('请求参数已解析，可点击 ee / dvi 解密');
+        }
+    }
+
+    document.getElementById('sdk-params').addEventListener('click', (e) => {
+        const el = e.target.closest('[data-sdk-dec]');
+        if (!el) return;
+        const right = el.parentElement;
+        const existed = right.querySelector('.sdk-nested');
+        if (existed) {
+            existed.style.display = existed.style.display === 'none' ? 'block' : 'none';
+            return;
+        }
+        const key = el.getAttribute('data-sdk-key');
+        const rid = el.getAttribute('data-sdk-rid') || '';
+        const level = Number(el.getAttribute('data-sdk-level') || '0');
+        const raw = sdkValueStore[el.getAttribute('data-sdk-dec')] || '';
+        const r = tryUnionDecrypt(key, raw, rid, level);
+        if (!r || r.error) { toast((r && r.error) || '无法解密该字段', false); return; }
+        const host = document.createElement('div');
+        right.appendChild(host);
+        showUnionDecrypted(r.text, host, rid, level);
+        toast('已展开 ' + key);
+    });
+
+    document.getElementById('btn-sdk-decrypt').addEventListener('click', runUnionSdkDecrypt);
+    document.getElementById('btn-sdk-from-url').addEventListener('click', () => {
+        const src = document.getElementById('url-input').value.trim();
+        if (!src) { toast('URL 页没有内容', false); return; }
+        document.getElementById('sdk-url-input').value = src;
+        runUnionSdkDecrypt();
+    });
+    document.getElementById('btn-sdk-clear').addEventListener('click', () => {
+        document.getElementById('sdk-url-input').value = '';
+        document.getElementById('sdk-resp-input').value = '';
+        document.getElementById('sdk-url-msg').textContent = '';
+        document.getElementById('sdk-params').innerHTML = '';
+        document.getElementById('sdk-response').innerHTML = '';
+        lastSdkRespText = '';
+    });
+    document.getElementById('btn-sdk-copy-resp').addEventListener('click', () => {
+        if (!lastSdkRespText) { toast('请先解密响应', false); return; }
+        copyText(lastSdkRespText);
+    });
+
+    // Modal URL params
+    const modal = document.getElementById('custom-params-modal');
+    function openParamsModal() {
+        modalSnapshotUrlParams = JSON.stringify(customUrlParams);
+        modal.classList.add('show');
+        renderParamsList();
+    }
+    function closeParamsModal(restore) {
+        if (restore && modalSnapshotUrlParams !== null) {
+            customUrlParams = safeJsonParse(modalSnapshotUrlParams, []);
+            renderUrlMultiPanel();
+            syncUrlMultiSelectedClasses();
+            renderUrlTags();
+        }
+        modal.classList.remove('show');
+        modalSnapshotUrlParams = null;
+    }
+    function renderParamsList() {
+        const ul = document.getElementById('saved-custom-params-list');
+        ul.innerHTML = '';
+        customUrlParams.forEach(param => {
+            const li = document.createElement('li');
+            li.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);gap:8px';
+            const span = document.createElement('span');
+            span.textContent = param;
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'btn secondary sm';
+            del.innerHTML = '<i class="fas fa-trash"></i>';
+            del.addEventListener('click', () => {
+                customUrlParams = customUrlParams.filter(p => p !== param);
+                selectedUrlParams = selectedUrlParams.filter(p => p !== param);
+                persistUrlSelection();
+                renderParamsList();
+                renderUrlMultiPanel();
+                renderUrlTags();
+            });
+            li.appendChild(span);
+            li.appendChild(del);
+            ul.appendChild(li);
+        });
+    }
+    document.getElementById('btn-modal-add-param').addEventListener('click', () => {
+        const input = document.getElementById('new-param-name');
+        const name = input.value.trim();
+        if (!name) return;
+        if (customUrlParams.includes(name)) { toast('已存在同名参数', false); return; }
+        customUrlParams.push(name);
+        input.value = '';
+        renderParamsList();
+        renderUrlMultiPanel();
+        syncUrlMultiSelectedClasses();
+        toast('已添加（点「完成」后写入本地）');
+    });
+    document.getElementById('btn-modal-cancel').addEventListener('click', () => closeParamsModal(true));
+    document.getElementById('btn-modal-done').addEventListener('click', () => {
+        localStorage.setItem(STORAGE.urlParams, JSON.stringify(customUrlParams));
+        renderUrlMultiPanel();
+        syncUrlMultiSelectedClasses();
+        closeParamsModal(false);
+        toast('已保存');
+    });
+    document.querySelectorAll('[data-close-modal]').forEach(b => {
+        b.addEventListener('click', () => closeParamsModal(true));
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeParamsModal(true);
+    });
+
+    // JSON
+    function getNestedValue(obj, path) {
+        const normalized = path.replace(/\[(\d+)\]/g, '.$1').replace(/\[([^\]]+)\]/g, '.$1');
+        const keys = normalized.split('.').filter(Boolean);
+        let cur = obj;
+        for (const key of keys) {
+            if (cur === null || cur === undefined) return undefined;
+            cur = cur[key];
+        }
+        return cur;
+    }
+
+    function findValuesByFieldName(obj, fieldName, base = '', out = []) {
+        if (obj !== null && typeof obj === 'object') {
+            if (Array.isArray(obj)) {
+                obj.forEach((item, i) => findValuesByFieldName(item, fieldName, base + '[' + i + ']', out));
+            } else {
+                Object.keys(obj).forEach(k => {
+                    const np = base ? base + '.' + k : k;
+                    if (k === fieldName) out.push({ path: np, value: obj[k] });
+                    findValuesByFieldName(obj[k], fieldName, np, out);
+                });
+            }
+        }
+        return out;
+    }
+
+    function jsonStringifySafe(val) {
+        if (val === undefined) return 'undefined';
+        return JSON.stringify(val, (k, v) => (typeof v === 'bigint' ? v.toString() : v));
+    }
+
+    function tryParseJsonLoose(text) {
+        try { return JSON.parse(text); } catch {
+            let s = text.replace(/^\uFEFF/, '').trim();
+            s = s.replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":');
+            s = s.replace(/'/g, '"');
+            return JSON.parse(s);
+        }
+    }
+
+    function extractJsonAction() {
+        const jsonText = document.getElementById('json-input').value.trim();
+        const pathsText = document.getElementById('field-paths').value;
+        if (!jsonText || !pathsText.trim()) { toast('请填写 JSON 与路径', false); return; }
+        let data;
+        try {
+            data = tryParseJsonLoose(jsonText);
+        } catch (e) {
+            toast('JSON 解析失败：' + e.message, false);
+            return;
+        }
+        const paths = pathsText.split(/\r?\n/).map(p => p.trim()).filter(Boolean);
+        const box = document.getElementById('json-results');
+        let html = '';
+        const verifyRows = [];
+
+        paths.forEach(path => {
+            const isFull = path.includes('.') || path.includes('[');
+            if (isFull) {
+                try {
+                    const val = getNestedValue(data, path);
+                    const str = val === undefined ? 'undefined' : jsonStringifySafe(val);
+                    const id = 'f_' + Math.random().toString(36).slice(2);
+                    verifyRows.push({ id, label: path, actual: str });
+                    html += '<div class="result-row" data-verify-id="' + escapeAttr(id) + '"><div class="row-head"><strong>' + escapeHtml(path) + '</strong><button type="button" class="btn secondary sm" data-copy-json="' + escapeAttr(str) + '"><i class="fas fa-copy"></i></button></div><div>' + escapeHtml(str) + '</div><input class="verify-input" type="text" placeholder="期望值（可选）" data-actual="' + escapeAttr(str) + '" aria-label="校验 ' + escapeAttr(path) + '"></div>';
+                } catch (e) {
+                    html += '<div class="result-row err"><strong>' + escapeHtml(path) + '</strong> 提取失败：' + escapeHtml(e.message) + '</div>';
+                }
+            } else {
+                const matches = findValuesByFieldName(data, path);
+                if (!matches.length) {
+                    html += '<div class="result-row err"><strong>' + escapeHtml(path) + '</strong> 未找到同名属性</div>';
+                } else {
+                    matches.forEach((m, idx) => {
+                        const label = '[模糊] ' + m.path;
+                        const str = jsonStringifySafe(m.value);
+                        const id = 'f_' + Math.random().toString(36).slice(2);
+                        verifyRows.push({ id, label, actual: str });
+                        html += '<div class="result-row" data-verify-id="' + escapeAttr(id) + '"><div class="row-head"><strong>' + escapeHtml(label) + '</strong><button type="button" class="btn secondary sm" data-copy-json="' + escapeAttr(str) + '"><i class="fas fa-copy"></i></button></div><div>' + escapeHtml(str) + '</div><input class="verify-input" type="text" placeholder="期望值" data-actual="' + escapeAttr(str) + '" aria-label="校验"></div>';
+                    });
+                }
+            }
+        });
+
+        box.innerHTML = html || '<div class="result-row">无输出</div>';
+        box.querySelectorAll('[data-copy-json]').forEach(btn => {
+            btn.addEventListener('click', () => copyText(btn.getAttribute('data-copy-json') || ''));
+        });
+        attachJsonVerification();
+        document.getElementById('verification-results').innerHTML = '<span style="color:var(--text-secondary)">在左侧输入期望值后将更新统计。</span>';
+        toast('提取完成');
+    }
+
+    function attachJsonVerification() {
+        const box = document.getElementById('json-results');
+        const summary = document.getElementById('verification-results');
+
+        function refresh() {
+            const inputs = box.querySelectorAll('.verify-input');
+            let filled = 0, ok = 0, bad = 0;
+            inputs.forEach(inp => {
+                const exp = inp.value.trim();
+                if (!exp) return;
+                filled++;
+                const act = inp.getAttribute('data-actual') || '';
+                const row = inp.closest('.result-row');
+                row.classList.remove('match', 'warn');
+                if (act === exp) { ok++; row.classList.add('match'); }
+                else { bad++; row.classList.add('warn'); }
+            });
+            summary.innerHTML = '<div class="result-row">已填写 ' + filled + ' 项 · 匹配 ' + ok + ' · 不一致 ' + bad + '</div>';
+        }
+
+        box.querySelectorAll('.verify-input').forEach(inp => {
+            inp.addEventListener('input', refresh);
+        });
+    }
+
+    // JSON路径下拉选取相关
+    let selectedJsonPaths = [];
+    const jsonPathsRoot = document.getElementById('json-paths-multi-root');
+    const jsonPathsPanel = document.getElementById('json-paths-multi-panel');
+    const jsonPathsTrigger = document.getElementById('json-paths-multi-trigger');
+    const jsonPathsLabel = document.getElementById('json-paths-multi-label');
+    const jsonPathsTags = document.getElementById('json-paths-selected-tags');
+
+    function renderJsonPathsPanel() {
+        jsonPathsPanel.innerHTML = '';
+        if (customJsonFields.length === 0) {
+            jsonPathsPanel.innerHTML = '<div style="padding:12px;color:var(--text-secondary);text-align:center">暂无保存的路径</div>';
+            return;
+        }
+        customJsonFields.forEach(field => {
+            const opt = document.createElement('div');
+            opt.className = 'multi-option';
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('data-value', field);
+            opt.innerHTML = `<span class="opt-text">${escapeHtml(field)}</span><button type="button" class="opt-delete" title="删除" aria-label="删除"><i class="fas fa-trash"></i></button>`;
+            if (selectedJsonPaths.includes(field)) opt.classList.add('selected');
+            
+            // 点击选择/取消选择
+            opt.addEventListener('click', (e) => {
+                if (e.target.closest('.opt-delete')) return;
+                e.stopPropagation();
+                const idx = selectedJsonPaths.indexOf(field);
+                if (idx > -1) {
+                    selectedJsonPaths.splice(idx, 1);
+                } else {
+                    selectedJsonPaths.push(field);
+                }
+                renderJsonPathsPanel();
+                renderJsonPathsTags();
+                syncJsonPathsToTextarea();
+            });
+            
+            // 删除按钮
+            opt.querySelector('.opt-delete').addEventListener('click', (e) => {
+                e.stopPropagation();
+                customJsonFields = customJsonFields.filter(f => f !== field);
+                selectedJsonPaths = selectedJsonPaths.filter(f => f !== field);
+                localStorage.setItem(STORAGE.jsonFields, JSON.stringify(customJsonFields));
+                renderJsonPathsPanel();
+                renderJsonPathsTags();
+                syncJsonPathsToTextarea();
+                toast('已删除路径');
+            });
+            
+            jsonPathsPanel.appendChild(opt);
+        });
+    }
+
+    function renderJsonPathsTags() {
+        jsonPathsTags.innerHTML = '';
+        if (selectedJsonPaths.length === 0) {
+            jsonPathsLabel.textContent = '点击选择常用路径...';
+            return;
+        }
+        jsonPathsLabel.textContent = `已选择 ${selectedJsonPaths.length} 个路径`;
+        selectedJsonPaths.forEach(field => {
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.innerHTML = escapeHtml(field) + '<button type="button" aria-label="移除"><i class="fas fa-times"></i></button>';
+            tag.querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectedJsonPaths = selectedJsonPaths.filter(f => f !== field);
+                renderJsonPathsPanel();
+                renderJsonPathsTags();
+                syncJsonPathsToTextarea();
+            });
+            jsonPathsTags.appendChild(tag);
+        });
+    }
+
+    function syncJsonPathsToTextarea() {
+        const ta = document.getElementById('field-paths');
+        const existing = ta.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        // 合并现有和选中的，去重
+        const merged = [...new Set([...existing, ...selectedJsonPaths])];
+        ta.value = merged.join('\n');
+    }
+
+    // JSON路径下拉事件
+    if (jsonPathsTrigger) {
+        jsonPathsTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const expanded = jsonPathsPanel.classList.contains('show');
+            jsonPathsPanel.classList.toggle('show', !expanded);
+            jsonPathsTrigger.setAttribute('aria-expanded', String(!expanded));
+        });
+        document.addEventListener('click', (e) => {
+            if (!jsonPathsRoot.contains(e.target)) {
+                jsonPathsPanel.classList.remove('show');
+                jsonPathsTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function renderSavedJsonFields() {
+        // 重新渲染下拉面板
+        renderJsonPathsPanel();
+        renderJsonPathsTags();
+    }
+
+    function addJsonPathFromInput() {
+        try {
+            const input = document.getElementById('new-field-path');
+            if (!input) { toast('页面元素异常', false); return; }
+            const p = (input.value || '').trim();
+            if (!p) { toast('请输入路径', false); return; }
+            if (customJsonFields.includes(p)) { toast('路径已存在', false); return; }
+            customJsonFields.push(p);
+            localStorage.setItem(STORAGE.jsonFields, JSON.stringify(customJsonFields));
+            renderSavedJsonFields();
+            input.value = '';
+            input.focus();
+            toast('已保存路径');
+        } catch (err) {
+            toast('添加失败：' + err.message, false);
+        }
+    }
+
+    document.getElementById('btn-add-json-path').addEventListener('click', addJsonPathFromInput);
+    document.getElementById('new-field-path').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addJsonPathFromInput();
+        }
+    });
+
+    document.getElementById('btn-format-json').addEventListener('click', () => {
+        const ta = document.getElementById('json-input');
+        try {
+            const o = tryParseJsonLoose(ta.value.trim());
+            ta.value = JSON.stringify(o, null, 2);
+            toast('已格式化');
+        } catch (e) { toast('无法格式化：' + e.message, false); }
+    });
+
+    document.getElementById('btn-minify-json').addEventListener('click', () => {
+        const ta = document.getElementById('json-input');
+        try {
+            const o = tryParseJsonLoose(ta.value.trim());
+            ta.value = JSON.stringify(o);
+            toast('已压缩');
+        } catch (e) { toast('无法压缩：' + e.message, false); }
+    });
+
+    document.getElementById('btn-extract-json').addEventListener('click', extractJsonAction);
+    document.getElementById('btn-clear-json').addEventListener('click', () => {
+        ['json-input', 'field-paths'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('json-results').innerHTML = '';
+        document.getElementById('verification-results').innerHTML = '<span style="color:var(--text-secondary)">提取后在此汇总校验状态。</span>';
+    });
+    document.getElementById('btn-copy-json-results').addEventListener('click', () => {
+        const t = document.getElementById('json-results').innerText.trim();
+        if (!t) { toast('暂无提取结果', false); return; }
+        copyText(t);
+    });
+
+    // Time
+    function convertTimeAction() {
+        const type = document.getElementById('conversion-type').value;
+        const fmt = document.getElementById('output-format').value;
+        const n = parseFloat(document.getElementById('input-value').value);
+        const out = document.getElementById('time-conversion-result');
+        if (Number.isNaN(n) || n < 0) {
+            out.innerHTML = '<div class="result-row err">请输入有效的非负数</div>';
+            toast('输入无效', false);
+            return;
+        }
+        let totalSec = 0;
+        let totalMs = 0;
+        switch (type) {
+            case 'minutes-to-hours-minutes':
+            case 'minutes-to-minutes-seconds':
+                totalSec = n * 60;
+                break;
+            case 'hours-to-minutes-seconds':
+                totalSec = n * 3600;
+                break;
+            case 'seconds-to-minutes-seconds':
+                totalSec = n;
+                break;
+            case 'milliseconds-to-minutes-seconds':
+                totalMs = n;
+                totalSec = n / 1000;
+                break;
+            default:
+                out.innerHTML = '<div class="result-row err">未知类型</div>';
+                return;
+        }
+        const abs = Math.abs(totalSec);
+        const sign = totalSec < 0 ? '-' : '';
+        let text = '';
+        if (fmt === 'hms') {
+            const h = Math.floor(abs / 3600);
+            const m = Math.floor((abs % 3600) / 60);
+            const s = Math.floor(abs % 60);
+            text = sign + h + '小时' + m + '分' + s + '秒';
+        } else if (fmt === 'ms') {
+            const m = Math.floor(abs / 60);
+            const s = Math.floor(abs % 60);
+            text = sign + m + '分' + s + '秒';
+        } else if (fmt === 'total_seconds') {
+            text = sign + Math.round(abs) + ' 秒';
+        } else if (fmt === 'total_milliseconds') {
+            const ms = totalMs ? Math.abs(totalMs) : Math.round(abs * 1000);
+            text = sign + ms + ' 毫秒';
+        } else text = '未知输出格式';
+        out.innerHTML = '<div class="result-row match"><strong>结果</strong><div>' + escapeHtml(text) + '</div></div>';
+        lastTimeText = text;
+        toast('换算完成');
+    }
+
+    function formatTimeWithTimezone(date, timezone) {
+        const opts = {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+        if (timezone === 'local') {
+            const offset = -date.getTimezoneOffset();
+            const sign = offset >= 0 ? '+' : '-';
+            const h = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+            const m = String(Math.abs(offset) % 60).padStart(2, '0');
+            return {
+                timeStr: date.toLocaleString('zh-CN', opts),
+                offset: 'UTC' + sign + h + ':' + m
+            };
+        }
+        const tz = timezone === 'UTC' ? 'UTC' : timezone;
+        let offset = 'UTC+00:00';
+        try {
+            const parts = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'longOffset' }).formatToParts(date);
+            const p = parts.find(x => x.type === 'timeZoneName');
+            if (p && p.value) offset = p.value.replace('GMT', 'UTC');
+        } catch { /* ignore */ }
+        return {
+            timeStr: date.toLocaleString('zh-CN', Object.assign({}, opts, { timeZone: tz })),
+            offset: offset
+        };
+    }
+
+    function renderTsLines(date) {
+        const tz = document.getElementById('timezone-select').value;
+        const sel = formatTimeWithTimezone(date, tz);
+        const loc = formatTimeWithTimezone(date, 'local');
+        const utc = formatTimeWithTimezone(date, 'UTC');
+        const lines = [
+            '选择时区：' + sel.timeStr + ' (' + sel.offset + ')',
+            '本地：' + loc.timeStr + ' (' + loc.offset + ')',
+            'UTC：' + utc.timeStr + ' (' + utc.offset + ')',
+            '时间戳(秒)：' + Math.floor(date.getTime() / 1000),
+            '时间戳(毫秒)：' + date.getTime(),
+            'ISO：' + date.toISOString()
+        ];
+        document.getElementById('timestamp-result').innerHTML =
+            lines.map(l => '<div class="result-row"><div>' + escapeHtml(l) + '</div></div>').join('');
+        lastTsText = lines.join('\n');
+        return lines;
+    }
+
+    function fillDatetimeLocal(date) {
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('datetime-input').value =
+            date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) +
+            'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+
+    function convertTsAction() {
+        const v = parseFloat(document.getElementById('timestamp-input').value);
+        const out = document.getElementById('timestamp-result');
+        if (Number.isNaN(v)) {
+            out.innerHTML = '<div class="result-row err">请输入数字时间戳</div>';
+            toast('无效时间戳', false);
+            return;
+        }
+        const ms = v > 1e12 ? v : v * 1000;
+        const d = new Date(ms);
+        fillDatetimeLocal(d);
+        renderTsLines(d);
+        toast('转换完成');
+    }
+
+    function convertDateToTsAction() {
+        const val = document.getElementById('datetime-input').value;
+        if (!val) { toast('请选择日期时间', false); return; }
+        const d = new Date(val);
+        if (Number.isNaN(d.getTime())) { toast('日期无效', false); return; }
+        document.getElementById('timestamp-input').value = String(Math.floor(d.getTime() / 1000));
+        renderTsLines(d);
+        toast('已转为时间戳');
+    }
+
+    document.getElementById('btn-convert-time').addEventListener('click', convertTimeAction);
+    document.getElementById('btn-convert-ts').addEventListener('click', convertTsAction);
+    document.getElementById('btn-date-to-ts').addEventListener('click', convertDateToTsAction);
+    document.getElementById('btn-now-ts').addEventListener('click', () => {
+        const now = new Date();
+        document.getElementById('timestamp-input').value = String(Math.floor(now.getTime() / 1000));
+        fillDatetimeLocal(now);
+        renderTsLines(now);
+        toast('已填入当前时间');
+    });
+    document.getElementById('timezone-select').addEventListener('change', () => {
+        const v = parseFloat(document.getElementById('timestamp-input').value);
+        if (!Number.isNaN(v)) convertTsAction();
+    });
+    document.getElementById('btn-copy-time').addEventListener('click', () => {
+        if (!lastTimeText) { toast('请先转换', false); return; }
+        copyText(lastTimeText);
+    });
+    document.getElementById('btn-copy-ts').addEventListener('click', () => {
+        if (!lastTsText) { toast('请先转换', false); return; }
+        copyText(lastTsText);
+    });
+
+    // Codec tab
+    function toBase64URL(b64) {
+        return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+    function fromBase64URL(text) {
+        let b64 = text.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        return b64;
+    }
+    function addB64LineBreaks(b64, format) {
+        if (format === 'none') return b64;
+        const n = format === 'mime' ? 76 : 64;
+        const lines = [];
+        for (let i = 0; i < b64.length; i += n) lines.push(b64.slice(i, i + n));
+        return lines.join('\n');
+    }
+
+    document.getElementById('btn-b64-enc').addEventListener('click', () => {
+        const t = document.getElementById('b64-input').value;
+        try {
+            let b = btoa(unescape(encodeURIComponent(t)));
+            if (document.getElementById('b64-url-safe').checked) b = toBase64URL(b);
+            b = addB64LineBreaks(b, document.getElementById('b64-format').value);
+            document.getElementById('b64-output').innerHTML = '<div class="result-row match"><pre style="white-space:pre-wrap;margin:0;font:inherit">' + escapeHtml(b) + '</pre></div>';
+            lastB64Text = b;
+            toast('Base64 编码完成');
+        } catch (e) {
+            document.getElementById('b64-output').innerHTML = '<div class="result-row err">' + escapeHtml(e.message) + '</div>';
+            toast('编码失败', false);
+        }
+    });
+    document.getElementById('btn-b64-dec').addEventListener('click', () => {
+        let t = document.getElementById('b64-input').value.trim().replace(/[\r\n\s]/g, '');
+        try {
+            if ((t.includes('-') || t.includes('_')) && !t.includes('+') && !t.includes('/')) {
+                t = fromBase64URL(t);
+            } else if (document.getElementById('b64-url-safe').checked) {
+                t = fromBase64URL(t);
+            }
+            const s = decodeURIComponent(escape(atob(t)));
+            document.getElementById('b64-output').innerHTML = '<div class="result-row"><pre style="white-space:pre-wrap;margin:0;font:inherit">' + escapeHtml(s) + '</pre></div>';
+            lastB64Text = s;
+            toast('解码完成');
+        } catch (e) {
+            document.getElementById('b64-output').innerHTML = '<div class="result-row err">解码失败，请确认输入为标准 Base64 / Base64URL</div>';
+            toast('解码失败', false);
+        }
+    });
+    document.getElementById('btn-b64-copy').addEventListener('click', () => {
+        if (!lastB64Text) { toast('暂无输出', false); return; }
+        copyText(lastB64Text);
+    });
+
+    document.getElementById('btn-uri-enc').addEventListener('click', () => {
+        const t = document.getElementById('enc-input').value;
+        const r = encodeURIComponent(t);
+        document.getElementById('enc-output').innerHTML = '<div class="result-row match"><div>' + escapeHtml(r) + '</div></div>';
+        lastEncText = r;
+        toast('已 encode');
+    });
+    document.getElementById('btn-uri-dec').addEventListener('click', () => {
+        const t = document.getElementById('enc-input').value;
+        try {
+            const r = decodeURIComponent(t);
+            document.getElementById('enc-output').innerHTML = '<div class="result-row"><div>' + escapeHtml(r) + '</div></div>';
+            lastEncText = r;
+            toast('已 decode');
+        } catch (e) {
+            document.getElementById('enc-output').innerHTML = '<div class="result-row err">decode 失败</div>';
+            toast('decode 失败', false);
+        }
+    });
+    document.getElementById('btn-uri-copy').addEventListener('click', () => {
+        if (!lastEncText) { toast('暂无输出', false); return; }
+        copyText(lastEncText);
+    });
+
+
+    // Mixer response JSON compare — 按广告块/数组整段并排
+    let lastMixerCompareText = '';
+    let lastMixerBlocks = [];
+
+    const MIXER_NOISE_KEYS = new Set([
+        'impressionXid', 'sei', 'ecpm', 'crex', 'coverUrl', 'dspName',
+        'rt', 'usi', 'ri', 'ltt', 'lgt', 'mc', 'g', 'im', 'kp', 'f',
+        'requestId', 'videoEventId', 'reqUrl'
+    ]);
+    const AD_HINTS = ['adZoneId', 'templateType', 'creativeObject', 'emptyTracking', 'clickThroughType'];
+    const ARRAY_KEYS = ['ads', 'adList', 'adInfos', 'slots', 'adSlots', 'ad'];
+
+    function unwrapMixerPayload(data) {
+        if (data == null) return data;
+        if (typeof data === 'string') {
+            try { data = tryParseJsonLoose(data); } catch { return data; }
+        }
+        if (Array.isArray(data)) return data;
+        if (data && typeof data === 'object') {
+            for (const k of ARRAY_KEYS) {
+                if (Array.isArray(data[k])) return data;
+            }
+            for (const wrap of ['data', 'result', 'body', 'response', 'payload']) {
+                if (data[wrap] != null) return unwrapMixerPayload(data[wrap]);
+            }
+        }
+        return data;
+    }
+
+    function looksLikeAd(x) {
+        return !!(x && typeof x === 'object' && !Array.isArray(x) && AD_HINTS.some(k => k in x));
+    }
+
+    function adAlignKey(ad, idx) {
+        if (!ad || typeof ad !== 'object' || Array.isArray(ad)) return '#' + idx;
+        const z = ad.adZoneId != null ? String(ad.adZoneId) : '';
+        const t = ad.templateType != null ? String(ad.templateType) : '';
+        const ctt = ad.clickThroughType != null ? String(ad.clickThroughType) : '';
+        const c = ad.comment != null ? String(ad.comment).slice(0, 40) : '';
+        if (z || t) return (z || 'na') + ' · ' + (t || 'na') + (ctt !== '' ? ' · ctt' + ctt : '') + (c ? ' · ' + c : '');
+        return '#' + idx;
+    }
+
+    function sanitizeNode(val, opt) {
+        if (val == null || typeof val !== 'object') return val;
+        if (Array.isArray(val)) return val.map(x => sanitizeNode(x, opt));
+        const o = {};
+        Object.keys(val).forEach(k => {
+            if (opt.ignoreVast && (k === 'vastObject' || k === 'vast')) return;
+            if (opt.ignoreEmpty && k === 'emptyTracking') return;
+            if (opt.ignoreNoise && MIXER_NOISE_KEYS.has(k)) return;
+            o[k] = sanitizeNode(val[k], opt);
+        });
+        return o;
+    }
+
+    function collectBlocks(data, path) {
+        const blocks = [];
+        if (Array.isArray(data)) {
+            data.forEach((item, i) => {
+                const p = (path || 'ads') + '[' + i + ']';
+                if (item && Array.isArray(item.ads)) {
+                    item.ads.forEach((ad, ai) => {
+                        blocks.push({ path: p + '.ads[' + ai + ']', title: adAlignKey(ad, ai), value: ad });
+                    });
+                } else {
+                    blocks.push({ path: p, title: adAlignKey(item, i), value: item });
+                }
+            });
+            return blocks;
+        }
+        if (data && typeof data === 'object') {
+            const consumed = new Set();
+            Object.keys(data).forEach(k => {
+                const v = data[k];
+                const p = path ? path + '.' + k : k;
+                if (!Array.isArray(v)) return;
+                const isAdArr = ARRAY_KEYS.includes(k) || v.some(looksLikeAd) || (v[0] && Array.isArray(v[0].ads));
+                if (!isAdArr) return;
+                consumed.add(k);
+                v.forEach((item, i) => {
+                    const ip = p + '[' + i + ']';
+                    if (item && Array.isArray(item.ads)) {
+                        item.ads.forEach((ad, ai) => {
+                            blocks.push({ path: ip + '.ads[' + ai + ']', title: adAlignKey(ad, ai), value: ad });
+                        });
+                    } else {
+                        blocks.push({ path: ip, title: adAlignKey(item, i), value: item });
+                    }
+                });
+            });
+            const rest = {};
+            Object.keys(data).forEach(k => { if (!consumed.has(k)) rest[k] = data[k]; });
+            if (Object.keys(rest).length) {
+                blocks.push({ path: path || 'envelope', title: '整包其它字段', value: rest, envelope: true });
+            }
+            return blocks;
+        }
+        blocks.push({ path: path || 'root', title: 'root', value: data });
+        return blocks;
+    }
+
+    function alignBlockLists(refBlocks, actBlocks, alignAds) {
+        const pairs = [];
+        if (!alignAds) {
+            const n = Math.max(refBlocks.length, actBlocks.length);
+            for (let i = 0; i < n; i++) {
+                pairs.push({
+                    title: (refBlocks[i] || actBlocks[i]).title,
+                    path: (refBlocks[i] || actBlocks[i]).path,
+                    ref: refBlocks[i] ? refBlocks[i].value : undefined,
+                    act: actBlocks[i] ? actBlocks[i].value : undefined
+                });
+            }
+            return pairs;
+        }
+        const usedAct = new Set();
+        refBlocks.forEach((rb, i) => {
+            let ai = actBlocks.findIndex((ab, j) => !usedAct.has(j) && ab.title === rb.title);
+            if (ai < 0) ai = actBlocks.findIndex((ab, j) => !usedAct.has(j) && ab.path === rb.path);
+            if (ai >= 0) usedAct.add(ai);
+            pairs.push({
+                title: rb.title,
+                path: rb.path,
+                ref: rb.value,
+                act: ai >= 0 ? actBlocks[ai].value : undefined
+            });
+        });
+        actBlocks.forEach((ab, j) => {
+            if (usedAct.has(j)) return;
+            pairs.push({ title: ab.title, path: ab.path, ref: undefined, act: ab.value });
+        });
+        return pairs;
+    }
+
+    function stableStringify(val) {
+        return JSON.stringify(val, null, 2);
+    }
+
+    function lineLcs(a, b) {
+        const n = a.length, m = b.length;
+        if (n * m > 800000) {
+            const rows = [];
+            const L = Math.max(n, m);
+            for (let i = 0; i < L; i++) {
+                const Lline = i < n ? a[i] : null;
+                const Rline = i < m ? b[i] : null;
+                let type = 'same';
+                if (Lline == null) type = 'add';
+                else if (Rline == null) type = 'del';
+                else if (Lline !== Rline) type = 'chg';
+                rows.push({ L: Lline, R: Rline, type });
+            }
+            return rows;
+        }
+        const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+        for (let i = 1; i <= n; i++) {
+            for (let j = 1; j <= m; j++) {
+                dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        const rows = [];
+        let i = n, j = m;
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
+                rows.push({ L: a[i - 1], R: b[j - 1], type: 'same' });
+                i--; j--;
+            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                rows.push({ L: null, R: b[j - 1], type: 'add' });
+                j--;
+            } else {
+                rows.push({ L: a[i - 1], R: null, type: 'del' });
+                i--;
+            }
+        }
+        rows.reverse();
+        const merged = [];
+        for (let k = 0; k < rows.length; k++) {
+            if (rows[k].type === 'del' && rows[k + 1] && rows[k + 1].type === 'add') {
+                merged.push({ L: rows[k].L, R: rows[k + 1].R, type: 'chg' });
+                k++;
+            } else merged.push(rows[k]);
+        }
+        return merged;
+    }
+
+    function changedTopKeys(a, b) {
+        const keys = new Set([
+            ...((a && typeof a === 'object' && !Array.isArray(a)) ? Object.keys(a) : []),
+            ...((b && typeof b === 'object' && !Array.isArray(b)) ? Object.keys(b) : [])
+        ]);
+        const out = [];
+        keys.forEach(k => {
+            const sa = a && typeof a === 'object' ? JSON.stringify(a[k]) : undefined;
+            const sb = b && typeof b === 'object' ? JSON.stringify(b[k]) : undefined;
+            if (sa !== sb) out.push(k);
+        });
+        return out;
+    }
+
+    function renderPane(lab, lines) {
+        const body = !lines.length
+            ? '<div class="dl-line empty">（缺失）</div>'
+            : lines.map(x => '<div class="dl-line ' + x.cls + '">' + (x.text == null ? '<span class="empty"> </span>' : escapeHtml(x.text)) + '</div>').join('');
+        return '<div class="block-pane"><div class="pane-lab">' + escapeHtml(lab) + '</div>' + body + '</div>';
+    }
+
+    function formatMixerJson(id) {
+        const el = document.getElementById(id);
+        const t = el.value.trim();
+        if (!t) { toast('内容为空', false); return; }
+        try {
+            const obj = unwrapMixerPayload(tryParseJsonLoose(t));
+            el.value = JSON.stringify(obj, null, 4);
+            toast('已格式化');
+        } catch (e) {
+            toast('JSON 解析失败：' + e.message, false);
+        }
+    }
+
+    function compareMixerAction() {
+        const refText = document.getElementById('mixer-ref-input').value.trim();
+        const actText = document.getElementById('mixer-act-input').value.trim();
+        if (!refText || !actText) { toast('请填写参考与待测 JSON', false); return; }
+        let refObj, actObj;
+        try { refObj = unwrapMixerPayload(tryParseJsonLoose(refText)); }
+        catch (e) { toast('参考 JSON 无效：' + e.message, false); return; }
+        try { actObj = unwrapMixerPayload(tryParseJsonLoose(actText)); }
+        catch (e) { toast('待测 JSON 无效：' + e.message, false); return; }
+
+        const opt = {
+            ignoreVast: document.getElementById('mixer-ignore-vast').checked,
+            ignoreEmpty: document.getElementById('mixer-ignore-empty').checked,
+            ignoreNoise: document.getElementById('mixer-ignore-noise').checked,
+            onlyDiff: document.getElementById('mixer-only-diff').checked,
+            alignAds: document.getElementById('mixer-align-ads').checked
+        };
+
+        const refBlocks = collectBlocks(refObj, '');
+        const actBlocks = collectBlocks(actObj, '');
+        const pairs = alignBlockLists(refBlocks, actBlocks, opt.alignAds);
+
+        let same = 0, diff = 0, missAct = 0, missRef = 0;
+        lastMixerBlocks = pairs.map(p => {
+            const r = p.ref === undefined ? undefined : sanitizeNode(p.ref, opt);
+            const a = p.act === undefined ? undefined : sanitizeNode(p.act, opt);
+            const rText = r === undefined ? '' : stableStringify(r);
+            const aText = a === undefined ? '' : stableStringify(a);
+            let status, cls;
+            if (p.ref === undefined) { status = '仅待测有'; cls = 'err'; missRef++; }
+            else if (p.act === undefined) { status = '仅参考有'; cls = 'err'; missAct++; }
+            else if (rText === aText) { status = '一致'; cls = 'match'; same++; }
+            else { status = '不一致'; cls = 'warn'; diff++; }
+            const lcs = lineLcs(rText ? rText.split('\n') : [], aText ? aText.split('\n') : []);
+            return {
+                title: p.title,
+                path: p.path,
+                status, cls,
+                keys: changedTopKeys(r, a),
+                lcs, rText, aText
+            };
+        });
+
+        document.getElementById('mixer-filter').style.display = 'block';
+        renderMixerBlocks();
+        document.getElementById('mixer-summary').innerHTML =
+            '<span class="stat-pill muted">块 ' + lastMixerBlocks.length + '</span>' +
+            '<span class="stat-pill ok">一致 ' + same + '</span>' +
+            '<span class="stat-pill warn">不一致 ' + diff + '</span>' +
+            '<span class="stat-pill err">仅参考有 ' + missAct + '</span>' +
+            '<span class="stat-pill err">仅待测有 ' + missRef + '</span>';
+
+        lastMixerCompareText = lastMixerBlocks.map(b => {
+            return '## ' + b.path + ' | ' + b.title + ' [' + b.status + ']\n差异字段: ' + (b.keys.join(', ') || '-') +
+                '\n--- 参考 ---\n' + (b.rText || '(缺失)') + '\n--- 待测 ---\n' + (b.aText || '(缺失)');
+        }).join('\n\n');
+        toast('比对完成：' + (diff + missAct + missRef) + ' 个块有差异');
+    }
+
+    function renderMixerBlocks() {
+        const onlyDiff = document.getElementById('mixer-only-diff').checked;
+        const q = (document.getElementById('mixer-filter').value || '').trim().toLowerCase();
+        const box = document.getElementById('mixer-results');
+        const shown = lastMixerBlocks.filter(b => {
+            if (onlyDiff && b.cls === 'match') return false;
+            if (!q) return true;
+            const hay = (b.path + ' ' + b.title + ' ' + b.keys.join(' ')).toLowerCase();
+            return hay.includes(q);
+        });
+        if (!shown.length) {
+            box.innerHTML = '<div class="result-row">没有需要展示的块（两边对应块完全一致）</div>';
+            return;
+        }
+        box.innerHTML = shown.map(b => {
+            const chips = b.keys.length
+                ? '<div class="block-keys">改动字段：' + b.keys.map(k => '<code>' + escapeHtml(k) + '</code>').join('') + '</div>'
+                : '';
+            const left = [];
+            const right = [];
+            b.lcs.forEach(row => {
+                if (row.type === 'same') {
+                    left.push({ text: row.L, cls: 'same' });
+                    right.push({ text: row.R, cls: 'same' });
+                } else if (row.type === 'chg') {
+                    left.push({ text: row.L, cls: 'chg' });
+                    right.push({ text: row.R, cls: 'chg' });
+                } else if (row.type === 'del') {
+                    left.push({ text: row.L, cls: 'del' });
+                    right.push({ text: '', cls: 'del' });
+                } else {
+                    left.push({ text: '', cls: 'add' });
+                    right.push({ text: row.R, cls: 'add' });
+                }
+            });
+            return '<div class="block-card ' + b.cls + '"><div class="block-head"><strong>' + escapeHtml(b.title) + '</strong>' +
+                '<span class="chip">' + escapeHtml(b.status) + '</span>' +
+                '<span style="color:var(--text-secondary);font-size:0.78rem">' + escapeHtml(b.path) + '</span>' +
+                chips + '</div><div class="block-grid">' + renderPane('参考', left) + renderPane('待测', right) + '</div></div>';
+        }).join('');
+    }
+
+    function clearMixerTab() {
+        ['mixer-ref-input', 'mixer-act-input', 'mixer-filter'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('mixer-results').innerHTML = '';
+        document.getElementById('mixer-summary').innerHTML = '';
+        document.getElementById('mixer-filter').style.display = 'none';
+        lastMixerCompareText = '';
+        lastMixerBlocks = [];
+    }
+
+    document.getElementById('btn-mixer-compare').addEventListener('click', compareMixerAction);
+    document.getElementById('btn-copy-mixer').addEventListener('click', () => {
+        if (!lastMixerCompareText) { toast('请先执行比对', false); return; }
+        copyText(lastMixerCompareText);
+    });
+    document.getElementById('btn-clear-mixer').addEventListener('click', clearMixerTab);
+    document.getElementById('btn-mixer-format-ref').addEventListener('click', () => formatMixerJson('mixer-ref-input'));
+    document.getElementById('btn-mixer-format-act').addEventListener('click', () => formatMixerJson('mixer-act-input'));
+    document.getElementById('btn-mixer-swap').addEventListener('click', () => {
+        const a = document.getElementById('mixer-ref-input');
+        const b = document.getElementById('mixer-act-input');
+        const t = a.value; a.value = b.value; b.value = t;
+        toast('已互换');
+    });
+    document.getElementById('btn-mixer-from-json').addEventListener('click', () => {
+        const src = document.getElementById('json-input').value.trim();
+        if (!src) { toast('JSON 页没有内容', false); return; }
+        document.getElementById('mixer-ref-input').value = src;
+        toast('已从 JSON 页带入参考');
+    });
+
+    function validateMixerLiveUrl(url) {
+        if (!url) return { valid: false, message: 'URL 不能为空' };
+        try {
+            const u = new URL(url);
+            if (u.protocol !== 'http:' && u.protocol !== 'https:') return { valid: false, message: '必须以 http:// 或 https:// 开头' };
+            if (!u.pathname.toLowerCase().includes('/mixer')) return { valid: false, message: '路径必须包含 /mixer' };
+            return { valid: true, message: '' };
+        } catch {
+            return { valid: false, message: 'URL 格式不正确' };
+        }
+    }
+
+    document.getElementById('mixer-live-url').addEventListener('input', () => {
+        const v = document.getElementById('mixer-live-url').value.trim();
+        const err = document.getElementById('mixer-url-error');
+        if (!v) { err.textContent = ''; return; }
+        const r = validateMixerLiveUrl(v);
+        err.textContent = r.valid ? '' : r.message;
+    });
+
+    document.getElementById('btn-mixer-fetch').addEventListener('click', async () => {
+        const mixerUrl = document.getElementById('mixer-live-url').value.trim();
+        const testIp = document.getElementById('mixer-test-ip').value.trim();
+        const prodIp = document.getElementById('mixer-prod-ip').value.trim();
+        const chk = validateMixerLiveUrl(mixerUrl);
+        if (!chk.valid) { toast(chk.message, false); return; }
+        if (!testIp) { toast('请输入测试环境 IP', false); return; }
+        if (!prodIp) { toast('请输入线上环境 IP', false); return; }
+        const btn = document.getElementById('btn-mixer-fetch');
+        btn.disabled = true;
+        btn.textContent = '请求中…';
+        const swapHost = (url, host) => {
+            const u = new URL(url);
+            u.host = host;
+            return u.toString();
+        };
+        const pull = async (url) => {
+            const res = await fetch(url, { method: 'GET', headers: { Accept: 'application/json' } });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        };
+        try {
+            const [testData, prodData] = await Promise.all([
+                pull(swapHost(mixerUrl, testIp)),
+                pull(swapHost(mixerUrl, prodIp))
+            ]);
+            document.getElementById('mixer-ref-input').value = JSON.stringify(testData, null, 4);
+            document.getElementById('mixer-act-input').value = JSON.stringify(prodData, null, 4);
+            toast('已填入测试 / 线上响应，开始比对');
+            compareMixerAction();
+        } catch (e) {
+            toast('拉取失败（多半是 CORS）：' + (e.message || e), false);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-arrow-down"></i> 拉取并填入';
+        }
+    });
+    document.getElementById('mixer-only-diff').addEventListener('change', () => { if (lastMixerBlocks.length) renderMixerBlocks(); });
+    document.getElementById('mixer-filter').addEventListener('input', () => { if (lastMixerBlocks.length) renderMixerBlocks(); });
+
+
+    // Global shortcuts
+    document.addEventListener('keydown', (e) => {
+        const meta = e.ctrlKey || e.metaKey;
+        if (!meta || e.key !== 'Enter') return;
+        const active = document.querySelector('.tab-content.active')?.id;
+        if (active === 'url-tab') parseUrlAction();
+        else if (active === 'sdk-tab') runUnionSdkDecrypt();
+        else if (active === 'json-tab') extractJsonAction();
+        else if (active === 'mixer-tab') compareMixerAction();
+    });
+
+    // Init
+    window.addEventListener('load', () => {
+        initThemeSelect();
+        buildWallpaperSelect();
+        const savedWp = localStorage.getItem(STORAGE.wallpaper) || '';
+        if (savedWp) setBackgroundByValue(savedWp);
+
+        selectedUrlParams = selectedUrlParams.filter(x => typeof x === 'string');
+        persistUrlSelection();
+
+        renderUrlMultiPanel();
+        renderUrlTags();
+        syncUrlMultiSelectedClasses();
+
+        renderSavedJsonFields();
+    });
+})();
+    </script>
+</body>
+</html>

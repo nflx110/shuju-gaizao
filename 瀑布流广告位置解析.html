@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瀑布流广告位置解析</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --ok: #16a34a;
+            --warn: #d97706;
+            --ad: #dc2626;
+            --empty: #7c3aed;
+            --slot: #c2410c;
+            --bg: #f1f5f9;
+            --card: #fff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --radius: 10px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+        header {
+            background: linear-gradient(120deg, #4361ee, #3f37c9);
+            color: #fff;
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        header h1 { font-size: 16px; font-weight: 650; }
+        header p { font-size: 12px; opacity: .88; margin-top: 2px; }
+        .wrap { max-width: 1280px; margin: 0 auto; padding: 20px; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-bottom: 16px;
+        }
+        label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            resize: vertical;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            outline: none;
+        }
+        textarea:focus { border-color: var(--primary); }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        button {
+            border: 0;
+            background: var(--primary);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        button.secondary { background: #e2e8f0; color: var(--text); }
+        button.ghost { background: transparent; color: var(--muted); }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .stat {
+            background: #f8fafc;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .stat b { display: block; font-size: 22px; line-height: 1.2; }
+        .stat span { font-size: 12px; color: var(--muted); }
+        .stat.ad b { color: var(--ad); }
+        .stat.content b { color: var(--ok); }
+        .stat.empty b { color: var(--empty); }
+        .stat.slot b { color: var(--slot); }
+        .chip-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 12px; }
+        .chip {
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 650;
+        }
+        .chip.c { background: #64748b; }
+        .chip.a { background: var(--ad); }
+        .chip.e { background: var(--empty); }
+        .chip.s { background: var(--slot); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+        th { font-size: 12px; color: var(--muted); font-weight: 600; }
+        .tag {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 650;
+        }
+        .tag.a { background: #fee2e2; color: #b91c1c; }
+        .tag.c { background: #dcfce7; color: #166534; }
+        .tag.e { background: #ede9fe; color: #6d28d9; }
+        .tag.s { background: #ffedd5; color: #9a3412; }
+        .path { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); word-break: break-all; }
+        .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+        .err { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 8px; }
+        .okline { color: #166534; font-size: 13px; margin: 4px 0 10px; }
+        .stream-title { font-size: 15px; margin-bottom: 6px; }
+        details { margin-top: 8px; }
+        summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 220px;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+        .copy-box {
+            width: 100%;
+            min-height: 90px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: 12px;
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .cfg {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .cfg input, .cfg select {
+            width: 100%;
+            padding: 7px 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .feed-grid {
+            display: grid;
+            gap: 3px;
+            margin: 10px 0;
+            align-items: stretch;
+        }
+        .row-lab {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 2px 8px 2px 4px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #0f172a;
+            background: #e2e8f0;
+            border-radius: 4px;
+            white-space: nowrap;
+            line-height: 1.15;
+        }
+        .row-lab .pg { font-size: 10px; font-weight: 650; color: #64748b; }
+        .row-lab.adrow { background: #bbf7d0; color: #14532d; }
+        .row-lab.adrow .pg { color: #166534; }
+        .page-break {
+            grid-column: 1 / -1;
+            background: #1e3a8a;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 650;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-top: 6px;
+        }
+        .gap-break {
+            grid-column: 1 / -1;
+            background: #f8fafc;
+            color: #475569;
+            border: 1px dashed #94a3b8;
+            font-size: 12px;
+            font-weight: 650;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-top: 6px;
+        }
+        .row-lab.gaprow {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px dashed #cbd5e1;
+            font-weight: 650;
+        }
+        .page-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 8px 0 4px;
+        }
+        .page-nav span {
+            background: #e0e7ff;
+            color: #3730a3;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 12px;
+            font-weight: 650;
+        }
+        .page-nav span.gap {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .cell-mini {
+            position: relative;
+            overflow: hidden;
+            font-size: 10px;
+            line-height: 1.2;
+            padding: 5px 3px;
+            text-align: center;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: 650;
+            min-height: 38px;
+            background: #64748b;
+        }
+        .cell-mini.gap { background: #e2e8f0; color: #94a3b8; }
+        .cell-mini .splits {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            pointer-events: none;
+        }
+        .cell-mini .splits b { flex: 1; display: block; }
+        .cell-mini .splits .expect { background: #facc15; }
+        .cell-mini .splits .hit { background: #16a34a; }
+        .cell-mini .splits .shift { background: #ea580c; }
+        .cell-mini .txt { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+        .cell-mini.has-expect .txt { color: #1c1917; text-shadow: 0 0 3px rgba(255,255,255,.9); }
+        .cell-mini.has-hit .txt,
+        .cell-mini.has-shift .txt { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+        .cell-mini.has-expect.has-hit .txt,
+        .cell-mini.has-expect.has-shift .txt {
+            color: #111827;
+            text-shadow: 0 0 3px rgba(255,255,255,.85);
+        }
+        .add-btn {
+            width: 100%;
+            margin-top: 8px;
+            background: #eef2ff;
+            color: #3730a3;
+            border: 1px dashed #818cf8;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 12px 14px;
+        }
+        .add-btn:hover { background: #e0e7ff; }
+        .paste-slot {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            background: #f8fafc;
+        }
+        .paste-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .paste-head label { margin: 0; color: var(--text); font-weight: 650; font-size: 13px; }
+        .paste-slot textarea { min-height: 120px; background: #fff; }
+        .btn-del { color: #b91c1c; padding: 4px 8px; }
+        .shot-drop {
+            margin-top: 12px;
+            border: 1px dashed #818cf8;
+            border-radius: 8px;
+            background: #eef2ff;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            color: #3730a3;
+            font-weight: 650;
+        }
+        .shot-drop.drag { background: #c7d2fe; }
+        .shot-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .shot-item {
+            width: 120px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .shot-item img { width: 100%; height: 80px; object-fit: cover; display: block; }
+        .shot-item .shot-name {
+            font-size: 11px;
+            padding: 4px 6px 2px;
+            color: var(--muted);
+            word-break: break-all;
+        }
+        .shot-item .shot-tools {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 4px 6px;
+        }
+        .shot-item .shot-tools button {
+            background: #e2e8f0;
+            color: var(--text);
+            padding: 2px 6px;
+            font-size: 11px;
+        }
+        .verdict-ok { background: #dcfce7; color: #14532d; border: 1px solid #86efac; padding: 12px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+        .verdict-bad { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 12px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+        .verdict-warn { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; padding: 12px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+        .stitch-preview { max-width: 100%; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>瀑布流广告位置解析</h1>
+    <p>可贴多页接口，也可上传前端截图识别「广告」角标，自动拼接后判断插得对不对</p>
+</header>
+<div class="wrap">
+    <div class="card">
+        <div class="cfg">
+            <div>
+                <label for="platform-select">平台</label>
+                <select id="platform-select">
+                    <option value="PCW" selected>PCW · 15455 · PCW_1_recofall_ad</option>
+                    <option value="PCA">PCA · 15454 · PCA-WN_1_recofall_ad</option>
+                </select>
+            </div>
+            <div>
+                <label for="group-select">对照规则（默认实验组）</label>
+                <select id="group-select">
+                    <option value="B" selected>实验组 B=1：1、2、4 行尾帧，之后每 3 行</option>
+                    <option value="A">对照组 A=0：1、4、6 行尾帧，之后每 3 行</option>
+                </select>
+            </div>
+            <div>
+                <label for="cols-input">一行几格（尾帧=该行最后一格）</label>
+                <input id="cols-input" type="number" min="2" max="12" value="6">
+            </div>
+        </div>
+        <div id="paste-list"></div>
+        <button type="button" class="add-btn" id="btn-add">＋ 添加接口</button>
+        <div class="row">
+            <button type="button" id="btn-parse">解析并对照</button>
+            <button type="button" class="secondary" id="btn-copy">复制对照文本</button>
+            <button type="button" class="ghost" id="btn-clear">清空</button>
+        </div>
+        <p class="hint">每个框贴一页响应。要翻页就点「＋ 添加接口」。⌘/Ctrl + Enter 解析。格子左侧是行号，多页按添加顺序连续编号。</p>
+    </div>
+    <div class="card">
+        <div class="stream-title">前端截图识别</div>
+        <p class="hint">AI 识图需先启动本机服务：双击 <code>启动AI识别服务.command</code>，或在本目录执行 <code>npm install && node shot_ai_server.mjs</code>，然后打开 <code>http://127.0.0.1:8788/瀑布流广告位置解析.html</code>。密钥在 Cursor Dashboard → Integrations。</p>
+        <p class="hint" id="shot-health">正在检测 AI 服务…</p>
+        <div class="cfg" style="margin-top:10px">
+            <div>
+                <label for="shot-mode">识别方式</label>
+                <select id="shot-mode">
+                    <option value="ai" selected>Cursor AI 识图（推荐，和对话同一套接口）</option>
+                    <option value="ocr">本地 OCR（不联网模型）</option>
+                </select>
+            </div>
+            <div>
+                <label for="shot-model">AI 模型</label>
+                <select id="shot-model">
+                    <option value="auto" selected>auto</option>
+                    <option value="composer-2.5">composer-2.5</option>
+                    <option value="grok-4">grok-4</option>
+                </select>
+            </div>
+            <div>
+                <label for="shot-key">Cursor API Key（可留空，用服务端环境变量）</label>
+                <input id="shot-key" type="password" placeholder="cursor_… 保存在本机浏览器" autocomplete="off">
+            </div>
+            <div>
+                <label for="shot-start">截图第一格对应 order</label>
+                <input id="shot-start" type="number" min="1" value="1">
+            </div>
+            <div>
+                <label for="shot-topcrop">顶部裁掉（%）</label>
+                <input id="shot-topcrop" type="number" min="0" max="40" value="0">
+            </div>
+            <div>
+                <label for="shot-botcrop">底部裁掉（%）</label>
+                <input id="shot-botcrop" type="number" min="0" max="40" value="0">
+            </div>
+        </div>
+        <div class="shot-drop" id="shot-drop">点击或拖入截图，可一次选多张　＋ 添加截图</div>
+        <input id="shot-files" type="file" accept="image/*" multiple hidden>
+        <div class="shot-list" id="shot-list"></div>
+        <div class="row">
+            <button type="button" id="btn-shot">识别截图并下结论</button>
+            <button type="button" class="ghost" id="btn-shot-clear">清空截图</button>
+        </div>
+        <p class="hint" id="shot-progress"></p>
+    </div>
+    <div id="shot-out"></div>
+    <div id="out"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+(function () {
+    const CARD_KEYS = [
+        'display_name', 'title', 'name', 'albumId', 'album_id', 'firstId', 'qipuId',
+        'tvId', 'page_url', 'album_image_url', 'album_image_url_hover', 'prevue',
+        'isAd', 'ad', 'adverts', 'ad_watermark_url', 'creativeObject', 'adZoneId',
+        'emptyTracking', 'templateType', 'block_class', 'alias_name', 'adtitle',
+        'position', 'extData', 'dataExtAds', 'dataExtAd', 'block_id', 'reqUrl',
+        'order', 'adPosition', 'card_slot', 'card_type', 'source'
+    ];
+    const NEST_PARSE_KEYS = new Set([
+        'response', 'card', 'dataExtAds', 'dataExtAd', 'ads', 'ad', 'extData'
+    ]);
+    const SKIP_KEYS = new Set([
+        'trackingParam', 'trackingTimeouts', 'timeSlices', 'emptyTracking',
+        'statistics', 'pingback', 'pingBack', 'headers', 'cookies'
+    ]);
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function decodeUriTimes(s, n) {
+        let t = s;
+        for (let i = 0; i < n; i++) {
+            if (!/%[0-9A-Fa-f]{2}/.test(t)) break;
+            try { t = decodeURIComponent(t.replace(/\+/g, '%20')); } catch { break; }
+        }
+        return t;
+    }
+
+    function extractBalanced(s, start) {
+        if (start < 0 || start >= s.length) return null;
+        const openCh = s[start];
+        if (openCh !== '{' && openCh !== '[') return null;
+        let brace = 0, bracket = 0, inStr = false, esc = false;
+        for (let i = start; i < s.length; i++) {
+            const c = s[i];
+            if (inStr) {
+                if (esc) { esc = false; continue; }
+                if (c === '\\') { esc = true; continue; }
+                if (c === '"') inStr = false;
+                continue;
+            }
+            if (c === '"') { inStr = true; continue; }
+            if (c === '{') brace++;
+            else if (c === '}') brace--;
+            else if (c === '[') bracket++;
+            else if (c === ']') bracket--;
+            if (brace < 0 || bracket < 0) return null;
+            if (brace === 0 && bracket === 0 && i > start) return s.slice(start, i + 1);
+        }
+        return null;
+    }
+
+    function jsonScore(parsed) {
+        const t = JSON.stringify(parsed);
+        let s = Math.min(t.length, 500000);
+        if (/dataExtAds|dataExtAd|adZoneId|ad_watermark|isAd|cupid\.iqiyi/.test(t)) s += 80000;
+        if (/Page_recommend|videos|猜你喜欢|pcw_home/.test(t)) s += 20000;
+        return s;
+    }
+
+    function tryParseOne(c) {
+        try { return JSON.parse(c); } catch (_) {}
+        try {
+            let t = c.replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":');
+            t = t.replace(/,\s*([}\]])/g, '$1');
+            return JSON.parse(t);
+        } catch (_) {}
+        return null;
+    }
+
+    function collectCandidateChunks(text) {
+        let s = String(text || '').replace(/^\uFEFF/, '');
+        s = decodeUriTimes(s, 3);
+        s = s.replace(/if\s*\(\s*typeof\s+qyMesh\.onPreload[\s\S]*$/i, '');
+        s = s.replace(/\}\s*catch\s*\(\s*\w*\s*\)\s*\{\s*\}\s*$/i, '');
+        const chunks = [];
+        const add = (chunk) => { if (chunk && chunk.length > 2) chunks.push(chunk); };
+        add(s.trim());
+        const jsonp = s.match(/^[A-Za-z_$][\w$]*\s*\(\s*([\s\S]*)\s*\)\s*;?\s*$/);
+        if (jsonp) add(jsonp[1]);
+        const assignRe = /qyMesh\.preload\s*\[[^\]]+\]\s*=\s*/g;
+        let m;
+        while ((m = assignRe.exec(s))) add(extractBalanced(s, m.index + m[0].length));
+        const eq = s.search(/=\s*[\{\[]/);
+        if (eq >= 0) {
+            const i = s.slice(eq).search(/[\{\[]/);
+            if (i >= 0) add(extractBalanced(s, eq + i));
+        }
+        const keyHits = ['"links_v2"', '"template"', '"dataExtAds"', '"dataExtAd"', '"videos"', '"adZoneId"', '"items"'];
+        keyHits.forEach(k => {
+            const i = s.indexOf(k);
+            if (i < 0) return;
+            const brace = s.lastIndexOf('{', i);
+            if (brace >= 0) add(extractBalanced(s, brace));
+        });
+        const firstObj = s.search(/\{\s*"/);
+        if (firstObj >= 0) add(extractBalanced(s, firstObj));
+        const firstArr = s.search(/\[\s*[\{\[]/);
+        if (firstArr >= 0) add(extractBalanced(s, firstArr));
+        return chunks;
+    }
+
+    function tryParseJsonLoose(text) {
+        const raw = String(text || '').replace(/^\uFEFF/, '').trim();
+        if (!raw) throw new Error('内容为空');
+        const chunks = collectCandidateChunks(raw);
+        let best = null, bestScore = -1, lastErr = null;
+        const seen = new Set();
+        chunks.forEach(c => {
+            if (!c) return;
+            const sig = c.length + ':' + c.slice(0, 48);
+            if (seen.has(sig)) return;
+            seen.add(sig);
+            try {
+                const parsed = tryParseOne(c);
+                if (parsed == null) throw new Error('fail');
+                const score = jsonScore(parsed);
+                if (score > bestScore) { best = parsed; bestScore = score; }
+            } catch (e) { lastErr = e; }
+        });
+        if (best != null) return best;
+        try { return JSON.parse(raw); } catch (e) { lastErr = e; }
+        throw lastErr || new Error('JSON 解析失败');
+    }
+
+    function guessPageLabel(data, index) {
+        try {
+            const t = JSON.stringify(data).slice(0, 8000);
+            const m = t.match(/[?&](?:page_st|pageNo|page_num|pageIndex|page|pg|pn)=(\d+)/i)
+                || t.match(/"(?:page_st|pageNo|page_num|pageIndex|page|pn)"\s*:\s*"?(\d+)/);
+            if (m) return '第' + m[1] + '页';
+        } catch (_) {}
+        return '第' + (index + 1) + '页接口';
+    }
+
+    function splitPasteSegments(text) {
+        const raw = String(text || '').replace(/^\uFEFF/, '');
+        const parts = raw.split(/\n[ \t]*[-]{3,}[ \t]*\n|\n[ \t]*={3,}[ \t]*\n|\n[ \t]*#{3,}[ \t]*\n|\n{3,}/)
+            .map(x => x.trim()).filter(x => x.length > 15);
+        if (parts.length > 1) return parts;
+        const s = decodeUriTimes(raw, 3);
+        const docs = [];
+        let i = 0;
+        while (i < s.length) {
+            const rel = s.slice(i).search(/[\{\[]/);
+            if (rel < 0) break;
+            const start = i + rel;
+            const chunk = extractBalanced(s, start);
+            if (!chunk) { i = start + 1; continue; }
+            const parsed = tryParseOne(chunk);
+            const score = parsed ? jsonScore(parsed) : 0;
+            if (parsed && chunk.length > 120 && score >= 2500) docs.push(chunk);
+            i = start + chunk.length;
+        }
+        if (docs.length > 1) return docs;
+        return [raw.trim()].filter(Boolean);
+    }
+
+    function parseAllPacks(text) {
+        const segs = splitPasteSegments(text);
+        const packs = [];
+        segs.forEach((seg, i) => {
+            try {
+                const parsed = deepParseStrings(tryParseJsonLoose(seg), 0);
+                const data = deepParseStrings(unwrapPayload(parsed, 0), 0);
+                if (data && data.__multi) {
+                    data.__multi.forEach(p => {
+                        packs.push({
+                            source: p.source || guessPageLabel(p.data, packs.length),
+                            data: p.data,
+                            page: packs.length + 1
+                        });
+                    });
+                } else {
+                    packs.push({
+                        source: segs.length > 1 ? guessPageLabel(data, i) : guessPageLabel(data, 0),
+                        data: data,
+                        page: packs.length + 1
+                    });
+                }
+            } catch (_) {}
+        });
+        if (!packs.length) throw new Error('JSON 解析失败');
+        packs.forEach((p, i) => { p.page = i + 1; });
+        return packs;
+    }
+
+    function topFeedOf(data, source) {
+        const streams = [];
+        const mixer = [];
+        walk(data, source || 'root', source || '', streams, mixer);
+        let feeds = uniqueStreams(streams).filter(s => s.total >= 2 || s.adCount);
+        feeds = preferStreams(feeds);
+        const mix = uniqueStreams(mixer);
+        if (!feeds.length && mix.length) feeds = mix;
+        const focus = feeds.filter(s => s.adCount || s.merged || /猜你喜欢|waterfall|recommend/i.test(s.name + s.path));
+        const top = (focus.length ? focus : feeds)[0] || null;
+        return { top, feeds, mix };
+    }
+
+    function mergePageStreams(pageStreams) {
+        const cols = getLayoutSettings().cols;
+        const raws = [];
+        const pageMarks = [];
+        let cursor = 0;
+        pageStreams.forEach((s, idx) => {
+            const orders = s.items.map(x => Number(x.order) || 0).filter(n => n > 0);
+            const localMin = orders.length ? Math.min.apply(null, orders) : 1;
+            const localMax = orders.length ? Math.max.apply(null, orders) : 0;
+            const restart = idx > 0 && localMin <= Math.max(2, Math.ceil(cols / 2));
+            const usedOff = restart ? cursor : 0;
+            const startOrder = localMin + usedOff;
+            const endOrder = localMax + usedOff;
+            pageMarks.push({
+                page: idx + 1,
+                label: s.pageLabel || s.name || ('第' + (idx + 1) + '页'),
+                rowStart: Math.ceil(startOrder / cols) || 1,
+                rowEnd: Math.ceil(endOrder / cols) || 1,
+                orderStart: startOrder,
+                orderEnd: endOrder
+            });
+            s.items.forEach(it => {
+                const raw = isObj(it.raw) ? Object.assign({}, it.raw) : { title: it.title };
+                raw.order = (Number(it.order) || 0) + usedOff;
+                raw.__page = idx + 1;
+                raws.push(raw);
+            });
+            cursor = Math.max(cursor, endOrder);
+        });
+        const merged = analyzeList(raws, 'pages.merged', '翻页合并 · ' + pageStreams.length + ' 个接口');
+        merged.pageMarks = pageMarks;
+        merged.mergedPages = true;
+        return merged;
+    }
+
+    function tryParseMaybeJson(s, depth) {
+        if (typeof s !== 'string' || depth > 8) return s;
+        let t = s.trim();
+        if (!t) return s;
+        if (!(t.startsWith('{') || t.startsWith('[') || t.startsWith('"'))) return s;
+        const parsed = tryParseOne(t);
+        if (parsed == null) return s;
+        return deepParseStrings(parsed, depth + 1);
+    }
+
+    function deepParseStrings(node, depth) {
+        if (depth > 8 || node == null) return node;
+        if (typeof node === 'string') return tryParseMaybeJson(node, depth);
+        if (Array.isArray(node)) return node.map(x => deepParseStrings(x, depth + 1));
+        if (!isObj(node)) return node;
+        const o = {};
+        Object.keys(node).forEach(k => {
+            let v = node[k];
+            if (typeof v === 'string' && (NEST_PARSE_KEYS.has(k) || /^{\s*"/.test(v.trim()) || /^\s*\[/.test(v.trim()))) {
+                v = tryParseMaybeJson(v, depth);
+            }
+            o[k] = deepParseStrings(v, depth + 1);
+        });
+        return o;
+    }
+
+    function mixerZoneFrom(val, depth) {
+        if (val == null || depth > 6) return '';
+        if (typeof val === 'string') {
+            const m = val.match(/[?&]azd=(\d+)/i) || val.match(/adZoneId["']?\s*[:=]\s*(\d+)/);
+            return m ? m[1] : '';
+        }
+        if (Array.isArray(val)) {
+            for (let i = 0; i < val.length; i++) {
+                const z = mixerZoneFrom(val[i], depth + 1);
+                if (z) return z;
+            }
+            return '';
+        }
+        if (!isObj(val)) return '';
+        if (val.adZoneId != null) return String(val.adZoneId);
+        for (const k of ['reqUrl', 'url', 'mixer', 'response', 'card', 'dataExtAds', 'dataExtAd', 'ad', 'ads', 'extData']) {
+            if (val[k] != null) {
+                const z = mixerZoneFrom(val[k], depth + 1);
+                if (z) return z;
+            }
+        }
+        return '';
+    }
+
+    function getExtAds(item) {
+        if (!isObj(item)) return null;
+        if (item.dataExtAds) return item.dataExtAds;
+        if (item.dataExtAd) return item.dataExtAd;
+        if (isObj(item.extData) && item.extData.dataExtAds) return item.extData.dataExtAds;
+        if (isObj(item.extData) && item.extData.dataExtAd) return item.extData.dataExtAd;
+        return null;
+    }
+
+    function unwrapPayload(data, depth) {
+        if (data == null || depth > 6) return data;
+        if (typeof data === 'string') {
+            const t = data.trim();
+            if ((t.startsWith('{') || t.startsWith('[')) && t.length > 1) {
+                try { return unwrapPayload(tryParseJsonLoose(t), depth + 1); } catch { return data; }
+            }
+            return data;
+        }
+        if (Array.isArray(data)) return data;
+        if (typeof data !== 'object') return data;
+        if (data.log && Array.isArray(data.log.entries)) {
+            const bodies = [];
+            data.log.entries.forEach((ent, i) => {
+                const text = ent && ent.response && ent.response.content && ent.response.content.text;
+                if (!text) return;
+                try {
+                    bodies.push({
+                        source: 'HAR[' + i + '] ' + ((ent.request && ent.request.url) || ''),
+                        data: unwrapPayload(tryParseJsonLoose(text), depth + 1)
+                    });
+                } catch (_) {}
+            });
+            if (bodies.length === 1) return bodies[0].data;
+            if (bodies.length) return { __multi: bodies };
+        }
+        const charlesBody = data.response && (data.response.body || data.response.content);
+        if (charlesBody != null && charlesBody !== data) {
+            return unwrapPayload(charlesBody, depth + 1);
+        }
+        for (const k of ['data', 'result', 'payload', 'body', 'content']) {
+            if (data[k] != null && typeof data[k] === 'object') {
+                const inner = data[k];
+                if (Array.isArray(inner) || inner.template || inner.items || inner.cards || inner.ads || inner.templateType || inner.adZoneId) {
+                    return data[k] === data ? data : (k === 'data' ? data : unwrapPayload(inner, depth + 1));
+                }
+            }
+        }
+        return data;
+    }
+
+    function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
+
+    function looksLikeCard(x) {
+        if (!isObj(x)) return false;
+        return CARD_KEYS.some(k => x[k] != null);
+    }
+
+    function truthyObj(x) {
+        return isObj(x) && Object.keys(x).length > 0;
+    }
+
+    function isEmptyAd(item) {
+        if (!isObj(item)) return false;
+        if (item.isAdEmptyShow === true) return true;
+        if (item.comment === '空订单') return true;
+        if (truthyObj(item.emptyTracking) && !item.creativeObject && !truthyObj(item.ad)) return true;
+        const ad = item.ad;
+        if (isObj(ad) && truthyObj(ad.emptyTracking) && !ad.creativeObject) return true;
+        return false;
+    }
+
+    function flagIsAd(v) {
+        return v === true || v === 1 || v === 'true' || v === '1';
+    }
+
+    function isCardSlot(item) {
+        if (!isObj(item)) return false;
+        if (item.card_slot || item.cardSlot) return true;
+        const t = String(item.card_type || item.cardType || item.block_class || item.alias_name || item.type || '');
+        if (/card_slots?|cardSlot/i.test(t)) return true;
+        return false;
+    }
+
+    function pickSource(item) {
+        if (!isObj(item)) return null;
+        if (isObj(item.source)) return item.source;
+        if (isObj(item.data) && isObj(item.data.source)) return item.data.source;
+        return null;
+    }
+
+    function isAdItem(item) {
+        if (!isObj(item)) return false;
+        if (isCardSlot(item) && !flagIsAd(item.isAd) && !(pickSource(item) && flagIsAd(pickSource(item).isAd))) return false;
+        const src = pickSource(item);
+        if (flagIsAd(item.isAd) || (src && flagIsAd(src.isAd))) return true;
+        if (item.hasAd === true && (item.isAd || item.ad || item.ad_watermark_url || getExtAds(item))) return true;
+        if (item.ad_watermark_url) return true;
+        if (truthyObj(item.ad)) return true;
+        if (getExtAds(item)) return true;
+        if (item.adZoneId != null && (item.templateType || item.creativeObject || item.emptyTracking)) return true;
+        if (item.creativeObject || item.emptyTracking) return true;
+        const alias = String(item.alias_name || item.block_class || item.card_type || item.cardType || item.type || item.block_id || '');
+        if (/(^|_|-)ad(_|$)|advert|trueview|adverts/i.test(alias) && !/load|ready/i.test(alias)) return true;
+        if (item.adtitle || item.adTitle) return true;
+        return false;
+    }
+
+    function itemTitle(item) {
+        if (!isObj(item)) return '';
+        const ad = isObj(item.ad) ? item.ad : null;
+        const ext = getExtAds(item);
+        const cr = item.creativeObject || (ad && ad.creativeObject) || {};
+        const src = pickSource(item);
+        return item.display_name || item.title || item.name || item.adtitle || item.adTitle
+            || item.block_id || cr.title || cr.adTitle
+            || (src && (src.title || src.display_name || src.name))
+            || (ad && (ad.title || ad.display_name))
+            || (ext && (ext.title || (isObj(ext.card) && ext.card.title))) || '';
+    }
+
+    function itemOrder(item, fallbackIndex) {
+        if (!isObj(item)) return fallbackIndex + 1;
+        const raw = item.order != null ? item.order
+            : (pickSource(item) && pickSource(item).order != null ? pickSource(item).order : item.ord);
+        const n = Number(raw);
+        return Number.isFinite(n) && n > 0 ? n : (fallbackIndex + 1);
+    }
+
+    function itemAdPosition(item) {
+        if (!isObj(item)) return undefined;
+        const src = pickSource(item);
+        const raw = item.adPosition != null ? item.adPosition
+            : (item.ad_position != null ? item.ad_position
+                : (src && (src.adPosition != null ? src.adPosition : src.ad_position)));
+        if (raw == null || raw === '') return undefined;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : raw;
+    }
+
+    function itemZone(item) {
+        if (!isObj(item)) return '';
+        const ad = isObj(item.ad) ? item.ad : {};
+        return item.adZoneId || ad.adZoneId || item.azd || item.azt
+            || ad.azd || ad.azt || mixerZoneFrom(item, 0) || '';
+    }
+
+    function classify(item) {
+        if (isAdItem(item) || isEmptyAd(item)) {
+            return isEmptyAd(item) ? 'empty' : 'ad';
+        }
+        if (isCardSlot(item)) return 'slot';
+        return 'content';
+    }
+
+    function getLayoutSettings() {
+        const cols = Math.max(2, parseInt((document.getElementById('cols-input') || {}).value, 10) || 6);
+        const group = (document.getElementById('group-select') || {}).value || 'B';
+        const platform = (document.getElementById('platform-select') || {}).value || 'PCW';
+        return { cols, group, platform };
+    }
+
+    function theoreticalAdRows(maxRow, group) {
+        const rows = [];
+        if (group === 'A') {
+            if (maxRow >= 1) rows.push(1);
+            if (maxRow >= 4) rows.push(4);
+            if (maxRow >= 6) rows.push(6);
+            for (let r = 9; r <= maxRow; r += 3) rows.push(r);
+        } else {
+            if (maxRow >= 1) rows.push(1);
+            if (maxRow >= 2) rows.push(2);
+            if (maxRow >= 4) rows.push(4);
+            for (let r = 7; r <= maxRow; r += 3) rows.push(r);
+        }
+        return rows;
+    }
+
+    function inferCols(items) {
+        const ads = items.filter(x => (x.kind === 'ad' || x.kind === 'empty') && x.adPosition != null);
+        const votes = {};
+        ads.forEach(a => {
+            const p = Number(a.adPosition);
+            if (!p) return;
+            [2, 3, 4, 5, 6].forEach(c => {
+                const t = p * c;
+                if (a.order === t || a.order === t + 1) votes[c] = (votes[c] || 0) + 1;
+            });
+        });
+        const keys = Object.keys(votes);
+        if (!keys.length) return null;
+        keys.sort((a, b) => votes[b] - votes[a] || Number(b) - Number(a));
+        return Number(keys[0]);
+    }
+
+    function buildExpectHits(items, cols, group) {
+        const maxOrder = items.reduce((m, x) => Math.max(m, x.order || 0), 0);
+        const maxRow = Math.max(
+            4,
+            Math.ceil(maxOrder / cols) || 0,
+            items.reduce((m, x) => {
+                const p = Number(x.adPosition);
+                return Number.isFinite(p) ? Math.max(m, p) : m;
+            }, 0)
+        );
+        const byOrder = new Map();
+        items.forEach(x => { if (!byOrder.has(x.order)) byOrder.set(x.order, x); });
+        return theoreticalAdRows(maxRow, group).map(row => {
+            const theoretical = row * cols;
+            let actual = theoretical;
+            let shifted = 0;
+            let reason = '';
+            while (byOrder.has(actual) && byOrder.get(actual).kind === 'slot') {
+                reason = 'order ' + actual + ' 是卡槽「' + (byOrder.get(actual).title || '') + '」';
+                actual += 1;
+                shifted += 1;
+                if (shifted > 8) break;
+            }
+            const occupant = byOrder.get(actual);
+            return {
+                row,
+                theoretical,
+                actual,
+                shifted,
+                reason,
+                inRange: actual <= maxOrder || !!occupant,
+                occupant,
+                hit: occupant && (occupant.kind === 'ad' || occupant.kind === 'empty')
+            };
+        });
+    }
+
+    function compareExpect(items, expectHits) {
+        const ads = items.filter(x => x.kind === 'ad' || x.kind === 'empty');
+        const used = new Set();
+        const rows = expectHits.map(h => {
+            const byOrder = ads.find(a => a.order === h.actual || a.order === h.theoretical);
+            const byRow = ads.find(a => Number(a.adPosition) === h.row);
+            const ad = byOrder || byRow;
+            if (ad) used.add(ad);
+            let status = '缺失';
+            if (!h.inRange && !ad) status = '数据未覆盖';
+            else if (ad) status = '命中';
+            return Object.assign({}, h, { ad: ad, status: status });
+        });
+        const extra = ads.filter(a => !used.has(a));
+        return {
+            rows: rows,
+            extra: extra,
+            hitCount: rows.filter(r => r.status === '命中').length,
+            missCount: rows.filter(r => r.status === '缺失').length,
+            expectCount: expectHits.length
+        };
+    }
+
+    function inferPattern(adOrders, expectHits, cols, group) {
+        const rule = group === 'A'
+            ? '对照组：第1、4、6行尾帧，第6行后每3行'
+            : '实验组：第1、2、4行尾帧，第4行后每3行';
+        const rowText = expectHits.map(x => x.row).join('、');
+        const parts = [rule, '一行 ' + cols + ' 格', '尾帧格 = 行号×' + cols + '（第 ' + rowText + ' 行）'];
+        const shifts = expectHits.filter(x => x.shifted);
+        if (shifts.length) {
+            parts.push('卡槽占用则后移：' + shifts.map(x => x.theoretical + '→' + x.actual).join('、'));
+        }
+        parts.push('后端广告格 ' + (adOrders.join('、') || '无'));
+        return parts.join('；');
+    }
+
+    function parentName(node) {
+        if (!isObj(node)) return '';
+        return itemTitle(node) || node.alias_name || node.block || node.block_id || node.kv || node.id || '';
+    }
+
+    function analyzeList(arr, path, name) {
+        const items = arr.map((item, i) => {
+            const kind = classify(item);
+            const attached = isObj(item) && Array.isArray(item.adverts) ? item.adverts.length : 0;
+            const order = itemOrder(item, i);
+            return {
+                i0: i,
+                i1: i + 1,
+                order,
+                adPosition: itemAdPosition(item),
+                kind,
+                title: itemTitle(item) || ('#' + order),
+                zone: itemZone(item),
+                position: isObj(item) ? item.position : undefined,
+                watermark: !!(isObj(item) && (item.ad_watermark_url || getExtAds(item))),
+                attached,
+                isAdShow: isObj(item) ? item.isAdShow : undefined,
+                isAdClick: isObj(item) ? item.isAdClick : undefined,
+                isAdEmptyShow: isObj(item) ? item.isAdEmptyShow : undefined,
+                cardSlot: isObj(item) ? (item.card_slot || item.cardSlot || '') : '',
+                page: isObj(item) ? item.__page : undefined,
+                raw: item
+            };
+        });
+        items.sort((a, b) => (a.order - b.order) || (a.i0 - b.i0));
+        let countable = 0;
+        items.forEach(x => {
+            if (x.kind !== 'slot') countable += 1;
+            x.countable = x.kind === 'slot' ? null : countable;
+        });
+        const ads = items.filter(x => x.kind === 'ad' || x.kind === 'empty');
+        const contents = items.filter(x => x.kind === 'content');
+        const empties = items.filter(x => x.kind === 'empty');
+        const slots = items.filter(x => x.kind === 'slot');
+        const filledAds = items.filter(x => x.kind === 'ad');
+        const attachedTotal = items.reduce((s, x) => s + x.attached, 0);
+        const layout = getLayoutSettings();
+        const guessedCols = inferCols(items);
+        const cols = layout.cols;
+        const expectHits = buildExpectHits(items, cols, layout.group);
+        const cmp = compareExpect(items, expectHits);
+        const adOrders = ads.map(x => x.order);
+        return {
+            path,
+            name: name || path,
+            total: items.length,
+            adCount: ads.length,
+            contentCount: contents.length,
+            emptyCount: empties.length,
+            slotCount: slots.length,
+            filledAdCount: filledAds.length,
+            attachedTotal,
+            countableTotal: countable,
+            cols,
+            guessedCols,
+            group: layout.group,
+            platform: layout.platform,
+            expectHits,
+            cmp,
+            adSlots1: adOrders,
+            adIndexes0: ads.map(x => x.i0),
+            pattern: inferPattern(adOrders, expectHits, cols, layout.group),
+            items
+        };
+    }
+
+    function isLayoutBlock(x) {
+        if (!isObj(x)) return false;
+        if (Array.isArray(x.blocks) || Array.isArray(x.cards) || Array.isArray(x.items) || Array.isArray(x.tabs) || Array.isArray(x.links_v2)) return true;
+        if (x.video || x.videos) return true;
+        const d = x.data;
+        if (isObj(d) && (d.videos || d.video || d.data || d.template)) return true;
+        return false;
+    }
+
+    function looksLikeFeedArray(arr) {
+        if (!Array.isArray(arr) || !arr.length) return false;
+        if (arr.length > 800) return false;
+        if (arr.filter(isLayoutBlock).length >= Math.ceil(arr.length * 0.5)) return false;
+        const cards = arr.filter(looksLikeCard);
+        if (cards.length < Math.min(arr.length, 2) && cards.length < arr.length * 0.5) return false;
+        const mixerLike = arr.filter(x => isObj(x) && (x.adZoneId != null || x.templateType) && !x.display_name && !x.firstId && !x.qipuId && !x.albumId);
+        if (mixerLike.length === arr.length && arr.length >= 1) return 'mixer';
+        return true;
+    }
+
+    function shouldDescendCard(item) {
+        if (!isObj(item)) return true;
+        if (isCardSlot(item)) return false;
+        if (isLayoutBlock(item)) return true;
+        if (item.video || item.videos || item.data || item.template || item.links_v2) return true;
+        return !looksLikeCard(item);
+    }
+
+    function adsArrayFromExt(ext) {
+        if (!ext) return null;
+        if (Array.isArray(ext)) return ext;
+        if (Array.isArray(ext.ads)) return ext.ads;
+        const card = ext.card;
+        if (isObj(card)) {
+            if (Array.isArray(card.ads)) return card.ads;
+            const resp = card.response;
+            if (Array.isArray(resp)) return resp;
+            if (isObj(resp) && Array.isArray(resp.ads)) return resp.ads;
+            if (isObj(resp) && Array.isArray(resp.response)) return resp.response;
+        }
+        if (isObj(ext.response) && Array.isArray(ext.response.ads)) return ext.response.ads;
+        if (Array.isArray(ext.response)) return ext.response;
+        return null;
+    }
+
+    function walk(node, path, nameHint, streams, mixer) {
+        if (node == null) return;
+        if (Array.isArray(node)) {
+            const kind = looksLikeFeedArray(node);
+            if (kind === 'mixer') {
+                mixer.push(analyzeList(node, path, nameHint || 'mixer ads'));
+                return;
+            }
+            if (kind === true) {
+                const adsHere = node.filter(x => isAdItem(x) || isEmptyAd(x)).length;
+                const cardish = node.filter(looksLikeCard).length;
+                if (adsHere || cardish >= 3 || /waterfall|recommend|猜你喜欢|video|feed/i.test(path + (nameHint || ''))) {
+                    streams.push(analyzeList(node, path, nameHint));
+                }
+            }
+            node.forEach((item, i) => {
+                const nestedAds = adsArrayFromExt(getExtAds(item));
+                if (nestedAds && nestedAds.length) {
+                    mixer.push(analyzeList(nestedAds, path + '[' + i + '].dataExtAds', (nameHint || 'card') + '[' + (i + 1) + '] · mixer'));
+                }
+                if (!shouldDescendCard(item)) return;
+                const n = isObj(item) ? (parentName(item) || nameHint) : nameHint;
+                walk(item, path + '[' + i + ']', n, streams, mixer);
+            });
+            return;
+        }
+        if (!isObj(node)) return;
+        const selfName = parentName(node) || nameHint;
+        const extAds = getExtAds(node);
+        const nestedAds = adsArrayFromExt(extAds);
+        if (nestedAds && nestedAds.length) {
+            mixer.push(analyzeList(nestedAds, path + '.dataExtAds', (selfName || 'card') + ' · mixer'));
+        }
+        const videoArr = node.video || node.videos;
+        if (Array.isArray(videoArr)) {
+            const merged = [];
+            const parts = [];
+            videoArr.forEach((v, i) => {
+                if (isObj(v) && Array.isArray(v.data) && v.data.length) {
+                    const p = path + (node.video ? '.video' : '.videos') + '[' + i + '].data';
+                    const s = analyzeList(v.data, p, (selfName || 'video') + ' / 第' + (i + 1) + '组');
+                    parts.push(s);
+                    streams.push(s);
+                    merged.push.apply(merged, v.data);
+                }
+                if (isObj(v) && Array.isArray(v.adverts) && v.adverts.length) {
+                    mixer.push(analyzeList(v.adverts, path + '.video[' + i + '].adverts', (selfName || 'video') + ' adverts'));
+                }
+            });
+            if (parts.length > 1 && merged.length) {
+                const m = analyzeList(merged, path + '.(video.data 合并)', (selfName || '瀑布流') + ' · 合并后');
+                m.merged = true;
+                streams.push(m);
+            }
+        }
+        Object.keys(node).forEach(k => {
+            if (SKIP_KEYS.has(k)) return;
+            if (k === 'video' || k === 'videos') return;
+            walk(node[k], path ? path + '.' + k : k, selfName, streams, mixer);
+        });
+    }
+
+    function uniqueStreams(list) {
+        const seen = new Set();
+        const out = [];
+        list.forEach(s => {
+            const key = s.path + '|' + s.total + '|' + s.adSlots1.join(',');
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push(s);
+        });
+        return out;
+    }
+
+    function preferStreams(streams) {
+        const scored = streams.map(s => {
+            let score = 0;
+            if (s.adCount) score += 50 + s.adCount * 3;
+            if (s.slotCount) score += s.slotCount * 2;
+            if (s.merged) score += 20;
+            if (/猜你喜欢|waterfall|water_fall|recommend|dataExtAds|pcw_home|822/i.test(s.name + s.path)) score += 30;
+            if (s.items && s.items.some(x => x.adPosition != null || x.kind === 'slot')) score += 15;
+            if (s.contentCount >= 4) score += 8;
+            if (s.total >= 6) score += 5;
+            if (s.total <= 1) score -= 20;
+            return { s, score };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        return scored.map(x => x.s);
+    }
+
+    function kindLabel(k) {
+        if (k === 'ad') return '<span class="tag a">广告</span>';
+        if (k === 'empty') return '<span class="tag e">空单</span>';
+        if (k === 'slot') return '<span class="tag s">卡槽</span>';
+        return '<span class="tag c">内容</span>';
+    }
+
+    function kindLetter(k) {
+        if (k === 'ad') return '广';
+        if (k === 'empty') return '空';
+        if (k === 'slot') return '槽';
+        return '内';
+    }
+
+    function chipsHtml(items) {
+        return items.map(it => {
+            const cls = it.kind === 'ad' ? 'a' : (it.kind === 'empty' ? 'e' : (it.kind === 'slot' ? 's' : 'c'));
+            return '<span class="chip ' + cls + '" title="order ' + it.order + ' ' + escapeHtml(it.title) + '">' + it.order + kindLetter(it.kind) + '</span>';
+        }).join('');
+    }
+
+    function expectTable(s) {
+        const cmp = s.cmp;
+        if (!cmp || !cmp.rows.length) return '';
+        const rows = cmp.rows.map(h => {
+            const back = h.ad
+                ? ('后端 order ' + h.ad.order + '「' + (h.ad.title || '') + '」' + (h.ad.adPosition != null ? ' adPosition=' + h.ad.adPosition : ''))
+                : '无';
+            const cls = h.status === '命中' ? 'cmp-ok' : (h.status === '数据未覆盖' ? '' : 'cmp-bad');
+            return '<tr>'
+                + '<td>第 ' + h.row + ' 行尾帧</td>'
+                + '<td>第 ' + h.theoretical + ' 格' + (h.shifted ? ' → ' + h.actual : '') + '</td>'
+                + '<td>' + escapeHtml(back) + '</td>'
+                + '<td class="' + cls + '">' + h.status + '</td>'
+                + '<td>' + escapeHtml(h.reason || '') + '</td>'
+                + '</tr>';
+        }).join('');
+        let extra = '';
+        if (cmp.extra.length) {
+            extra = '<p class="cmp-bad">后端多出、不在实验组尾帧上的广告：'
+                + cmp.extra.map(a => 'order ' + a.order + (a.adPosition != null ? '(行' + a.adPosition + ')' : '')).join('、')
+                + '</p>';
+        }
+        return '<p class="okline">前端预期（实验组尾帧）对照后端　命中 ' + cmp.hitCount
+            + ' / 预期 ' + cmp.expectCount + '　缺失 ' + cmp.missCount
+            + (cmp.extra.length ? '　多出 ' + cmp.extra.length : '') + '</p>'
+            + extra
+            + '<table><thead><tr><th>前端位置</th><th>预期格号</th><th>后端该格</th><th>对照</th><th>说明</th></tr></thead><tbody>'
+            + rows + '</tbody></table>';
+    }
+
+    function cellFlagMap(s) {
+        const byOrder = new Map();
+        s.items.forEach(x => byOrder.set(Number(x.order), x));
+        const flags = new Map();
+        const add = (i, key) => {
+            const n = Number(i);
+            if (!n) return;
+            const o = flags.get(n) || { expect: false, hit: false, shift: false };
+            o[key] = true;
+            flags.set(n, o);
+        };
+        const isAdish = (it) => it && (it.kind === 'ad' || it.kind === 'empty');
+        (s.expectHits || []).forEach(h => {
+            add(h.theoretical, 'expect');
+            add(h.actual, 'expect');
+        });
+        ((s.cmp && s.cmp.rows) || []).forEach(h => {
+            add(h.theoretical, 'expect');
+            add(h.actual, 'expect');
+            const theo = byOrder.get(Number(h.theoretical));
+            const act = byOrder.get(Number(h.actual));
+            if (theo && !isAdish(theo)) add(h.theoretical, 'shift');
+            if (h.shifted) add(h.theoretical, 'shift');
+            if (act && !isAdish(act) && h.status !== '数据未覆盖') add(h.actual, 'shift');
+            if (h.ad && h.ad.order) add(h.ad.order, 'hit');
+        });
+        s.items.forEach(it => {
+            if (isAdish(it)) add(it.order, 'hit');
+        });
+        return flags;
+    }
+
+    function gapRowRanges(rowCount, pageMarks) {
+        if (!pageMarks.length) return [];
+        const ranges = [];
+        let start = null;
+        for (let r = 1; r <= rowCount; r++) {
+            const covered = pageMarks.some(p => r >= p.rowStart && r <= p.rowEnd);
+            if (!covered) {
+                if (start == null) start = r;
+            } else if (start != null) {
+                ranges.push({ start: start, end: r - 1 });
+                start = null;
+            }
+        }
+        if (start != null) ranges.push({ start: start, end: rowCount });
+        return ranges;
+    }
+
+    function gridHtml(s) {
+        const cols = s.cols || 6;
+        const byOrder = new Map();
+        s.items.forEach(x => byOrder.set(Number(x.order), x));
+        const maxOrder = s.items.reduce((m, x) => Math.max(m, Number(x.order) || 0), 0);
+        const flags = cellFlagMap(s);
+        const maxShow = Math.max(
+            maxOrder,
+            ...Array.from(flags.keys()),
+            ...((s.expectHits || []).map(h => Math.max(h.actual || 0, h.theoretical || 0)).concat([0]))
+        );
+        if (!maxShow) return '';
+        const rowCount = Math.ceil(maxShow / cols);
+        const adRows = new Set((s.expectHits || []).map(h => h.row));
+        const pageMarks = s.pageMarks || [];
+        const pageOfRow = (r) => pageMarks.find(p => r >= p.rowStart && r <= p.rowEnd);
+        const gaps = gapRowRanges(rowCount, pageMarks);
+        const gapOf = (r) => gaps.find(g => r >= g.start && r <= g.end);
+        const cells = [];
+        for (let r = 1; r <= rowCount; r++) {
+            const pm = pageMarks.find(p => p.rowStart === r);
+            const gap = gapOf(r);
+            if (pm) {
+                cells.push('<div class="page-break">第 ' + pm.page + ' 页接口　第 ' + pm.rowStart + '–' + pm.rowEnd + ' 行　order ' + pm.orderStart + '–' + pm.orderEnd + '　' + escapeHtml(pm.label) + '</div>');
+            }
+            if (gap && gap.start === r) {
+                const o1 = (gap.start - 1) * cols + 1;
+                const o2 = gap.end * cols;
+                cells.push('<div class="gap-break">接口之外空档　第 ' + gap.start + (gap.end > gap.start ? '–' + gap.end : '') + ' 行　order ' + o1 + '–' + o2 + '　不属于任何已添加的接口（两页之间没有数据）</div>');
+            }
+            const pg = pageOfRow(r);
+            const isGap = !!gap;
+            const labCls = 'row-lab' + (isGap ? ' gaprow' : '') + (!isGap && adRows.has(r) ? ' adrow' : '');
+            const labTitle = isGap ? ('第' + r + '行是接口之外的空档') : ('第 ' + r + ' 行' + (adRows.has(r) ? ' · 实验组尾帧行' : ''));
+            cells.push('<div class="' + labCls + '" title="' + escapeHtml(labTitle) + '">第' + r + '行' + (isGap ? '<span class="pg">空档</span>' : (pg && pageMarks.length > 1 ? '<span class="pg">P' + pg.page + '</span>' : '')) + '</div>');
+            for (let c = 1; c <= cols; c++) {
+                const i = (r - 1) * cols + c;
+                const it = byOrder.get(i);
+                const f = flags.get(i) || { expect: false, hit: false, shift: false };
+                const letter = it ? kindLetter(it.kind) : (f.expect ? '预' : (isGap ? '空' : '·'));
+                const cls = ['cell-mini'];
+                if (!it && isGap) cls.push('gap');
+                if (f.expect) cls.push('has-expect');
+                if (f.hit) cls.push('has-hit');
+                if (f.shift) cls.push('has-shift');
+                const bits = [];
+                if (f.expect) bits.push('<b class="expect" title="预期"></b>');
+                if (f.hit) bits.push('<b class="hit" title="实际占用"></b>');
+                if (f.shift) bits.push('<b class="shift" title="占位挪位"></b>');
+                const why = [];
+                if (f.expect) why.push('预期');
+                if (f.hit) why.push('实际占用');
+                if (f.shift) why.push('占位挪位');
+                if (isGap && !it) why.push('接口外空档');
+                const title = '第' + r + '行第' + c + '格 order=' + i + (it && it.page ? ' 第' + it.page + '页' : '') + (why.length ? '　' + why.join('+') : '') + (it ? ' ' + it.title : ' 无数据');
+                cells.push('<div class="' + cls.join(' ') + '" title="' + escapeHtml(title) + '">'
+                    + (bits.length ? '<span class="splits">' + bits.join('') + '</span>' : '')
+                    + '<span class="txt">' + i + letter + '</span></div>');
+            }
+        }
+        let nav = '';
+        if (pageMarks.length || gaps.length) {
+            nav = '<div class="page-nav">'
+                + pageMarks.map(p => '<span>P' + p.page + ' · 第' + p.rowStart + '–' + p.rowEnd + '行</span>').join('')
+                + gaps.map(g => '<span class="gap">空档 · 第' + g.start + (g.end > g.start ? '–' + g.end : '') + '行</span>').join('')
+                + '</div>';
+        }
+        return nav
+            + '<p class="hint">黄=预期　绿=实际占用　橙=占位挪位。一格可以左右拼接多种颜色。虚线「空档」行不属于任何接口。</p>'
+            + '<div class="feed-grid" style="grid-template-columns:64px repeat(' + cols + ',minmax(36px,1fr))">' + cells.join('') + '</div>';
+    }
+
+    function streamTable(s) {
+        const cols = s.cols || 6;
+        const rows = s.items.map(it => {
+            const extra = [];
+            const row = Math.ceil(it.order / cols);
+            const col = ((it.order - 1) % cols) + 1;
+            extra.push(col === cols ? ('第' + row + '行尾帧') : ('第' + row + '行第' + col + '格'));
+            if (it.page) extra.push('第' + it.page + '页');
+            if (it.adPosition != null) extra.push('adPosition=' + it.adPosition + ' 行');
+            if (it.countable != null) extra.push('累加(不含卡槽)=' + it.countable);
+            if (it.watermark) extra.push('有广告标识 / dataExtAds');
+            if (it.zone !== '' && it.zone != null) extra.push('广告位 ' + it.zone);
+            if (it.position != null && it.position !== '') extra.push('position=' + it.position);
+            if (it.cardSlot) extra.push('card_slot=' + it.cardSlot);
+            if (it.attached) extra.push('挂载 adverts×' + it.attached);
+            if (it.isAdShow === true) extra.push('isAdShow');
+            if (it.isAdEmptyShow === true) extra.push('isAdEmptyShow');
+            const expect = (s.expectHits || []).find(h => h.actual === it.order || h.theoretical === it.order);
+            if (expect && (it.kind === 'ad' || it.kind === 'empty')) {
+                extra.push(expect.shifted
+                    ? '第' + expect.row + '行本应 ' + expect.theoretical + '，卡槽占用后到 ' + expect.actual
+                    : '命中第' + expect.row + '行尾帧');
+            }
+            if (expect && it.kind === 'slot' && expect.theoretical === it.order) {
+                extra.push('占了第' + expect.row + '行理论格，广告应到 ' + expect.actual);
+            }
+            return '<tr>'
+                + '<td>' + it.order + '</td>'
+                + '<td>' + row + '/' + col + '</td>'
+                + '<td>' + it.i0 + '</td>'
+                + '<td>' + kindLabel(it.kind) + '</td>'
+                + '<td>' + escapeHtml(it.title) + '</td>'
+                + '<td>' + extra.map(escapeHtml).join('；') + '</td>'
+                + '</tr>';
+        }).join('');
+        return '<table><thead><tr><th>order</th><th>行/列</th><th>下标</th><th>类型</th><th>标题</th><th>标记</th></tr></thead><tbody>'
+            + rows + '</tbody></table>';
+    }
+
+    function summaryText(payload, streams, mixer) {
+        const lines = [];
+        const layout = getLayoutSettings();
+        lines.push('瀑布流广告位置对照');
+        lines.push('平台 ' + layout.platform + '　' + (layout.group === 'A' ? '对照组 A=0' : '实验组 B=1') + '　一行 ' + layout.cols + ' 格');
+        streams.forEach((s, idx) => {
+            lines.push('');
+            lines.push((idx + 1) + '. ' + s.name + (s.mergedPages ? ' [翻页合并]' : (s.merged ? ' [合并]' : '')) + (s.pageLabel ? '　' + s.pageLabel : ''));
+            if (s.pageMarks && s.pageMarks.length) {
+                lines.push('行号: ' + s.pageMarks.map(p => 'P' + p.page + '=第' + p.rowStart + '–' + p.rowEnd + '行').join('　'));
+            }
+            lines.push('路径: ' + s.path);
+            lines.push('内容 ' + s.contentCount + ' / 广告 ' + s.adCount + '（实体 ' + s.filledAdCount + '，空单 ' + s.emptyCount + '） / 卡槽 ' + (s.slotCount || 0) + ' / 合计 ' + s.total);
+            lines.push('规则: ' + s.pattern);
+            if (s.cmp) {
+                lines.push('对照: 命中 ' + s.cmp.hitCount + ' / 预期 ' + s.cmp.expectCount + '　缺失 ' + s.cmp.missCount + (s.cmp.extra.length ? '　多出 ' + s.cmp.extra.length : ''));
+                s.cmp.rows.forEach(h => {
+                    lines.push('  第' + h.row + '行尾帧 → 第' + (h.shifted ? h.actual : h.theoretical) + '格　' + h.status
+                        + (h.ad ? '　后端 order ' + h.ad.order : ''));
+                });
+                if (s.cmp.extra.length) {
+                    lines.push('多出广告: ' + s.cmp.extra.map(a => 'order ' + a.order).join('、'));
+                }
+            }
+            lines.push('后端广告 order: ' + (s.adSlots1.join(', ') || '无'));
+            const seq = s.items.map(it => it.order + kindLetter(it.kind)).join(' ');
+            lines.push('序列: ' + seq);
+        });
+        if (mixer.length) {
+            lines.push('');
+            lines.push('Mixer / adverts 包:');
+            mixer.forEach(s => {
+                lines.push('- ' + s.name + ' 广告 ' + s.adCount + ' / 空单 ' + s.emptyCount + ' / 合计 ' + s.total + '  路径 ' + s.path);
+            });
+        }
+        return lines.join('\n');
+    }
+
+    function render(data) {
+        const box = document.getElementById('out');
+        const packs = (data && data.__packs) ? data.__packs : [{ data: data, page: 1, source: 'root' }];
+        const pageStreams = [];
+        const allMix = [];
+        packs.forEach(pack => {
+            const got = topFeedOf(pack.data, pack.source || ('第' + pack.page + '页'));
+            if (got.top) {
+                got.top.page = pack.page;
+                got.top.pageLabel = pack.source || ('第' + pack.page + '页接口');
+                pageStreams.push(got.top);
+            }
+            (got.mix || []).forEach(m => allMix.push(m));
+        });
+        const mix = uniqueStreams(allMix);
+        let merged = null;
+        if (pageStreams.length > 1) merged = mergePageStreams(pageStreams);
+        const show = merged ? [merged].concat(pageStreams) : pageStreams;
+        const top = show[0];
+
+        if (!top) {
+            box.innerHTML = '<div class="card err">没有识别到瀑布流列表。多个翻页请用空行或 --- 隔开后一起粘贴。</div>';
+            window.__lastCopy = '';
+            return;
+        }
+
+        const html = [];
+        html.push('<div class="card">');
+        html.push('<div class="stats">');
+        html.push('<div class="stat"><b>' + packs.length + '</b><span>识别到的接口/页</span></div>');
+        html.push('<div class="stat content"><b>' + top.contentCount + '</b><span>内容数' + (merged ? '（合并后）' : '') + '</span></div>');
+        html.push('<div class="stat ad"><b>' + top.adCount + '</b><span>广告数（含空单）</span></div>');
+        html.push('<div class="stat"><b>' + top.filledAdCount + '</b><span>实体广告</span></div>');
+        html.push('<div class="stat empty"><b>' + top.emptyCount + '</b><span>空单</span></div>');
+        html.push('<div class="stat slot"><b>' + (top.slotCount || 0) + '</b><span>卡槽 cardSlot</span></div>');
+        html.push('<div class="stat"><b>' + top.total + '</b><span>合计格数</span></div>');
+        html.push('<div class="stat"><b>' + Math.ceil(top.total / (top.cols || 1)) + '</b><span>总行数</span></div>');
+        html.push('<div class="stat"><b>' + top.cols + '</b><span>一行几格</span></div>');
+        html.push('<div class="stat ' + ((top.cmp && top.cmp.missCount) ? 'ad' : 'content') + '"><b>' + (top.cmp ? top.cmp.hitCount + '/' + top.cmp.expectCount : '-') + '</b><span>实验组尾帧命中</span></div>');
+        html.push('</div>');
+        if (top.guessedCols && top.guessedCols !== top.cols) {
+            html.push('<p class="hint">数据里 adPosition 更像每行 ' + top.guessedCols + ' 格，当前按你填的 ' + top.cols + ' 格算。不对就改「一行几格」。</p>');
+        }
+        html.push('<p class="okline">' + escapeHtml(top.pattern) + '</p>');
+        html.push('<p class="path">主路径：' + escapeHtml(top.path) + (top.mergedPages ? ' · 已按翻页顺序拼接行号' : (top.merged ? ' · 已按同 block 多组 data 合并' : '')) + '</p>');
+        html.push(gridHtml(top));
+        html.push(expectTable(top));
+        html.push('<label>对照文本</label>');
+        html.push('<textarea class="copy-box" id="summary">' + escapeHtml(summaryText(data, show, mix)) + '</textarea>');
+        html.push('</div>');
+
+        show.forEach(s => {
+            html.push('<div class="card">');
+            html.push('<div class="stream-title">' + escapeHtml(s.name) + (s.mergedPages ? ' · 翻页合并（连续行号）' : (s.merged ? ' · 合并后（更接近页面瀑布流）' : '')) + (s.pageLabel && !s.mergedPages ? ' · ' + escapeHtml(s.pageLabel) : '') + '</div>');
+            html.push('<p class="path">' + escapeHtml(s.path) + '</p>');
+            html.push('<p>内容 <b>' + s.contentCount + '</b>　广告 <b style="color:#dc2626">' + s.adCount + '</b>　卡槽 <b style="color:#c2410c">' + (s.slotCount || 0) + '</b>　空单 ' + s.emptyCount + '　合计 ' + s.total + '　行数 ' + Math.ceil(s.total / (s.cols || 1)) + '</p>');
+            html.push('<p class="okline">' + escapeHtml(s.pattern) + '</p>');
+            html.push('<div class="chip-row">' + chipsHtml(s.items) + '</div>');
+            if (s !== top) {
+                html.push(gridHtml(s));
+                html.push(expectTable(s));
+            }
+            html.push(streamTable(s));
+            html.push('<details><summary>查看该列表原始 JSON</summary><pre>' + escapeHtml(JSON.stringify(s.items.map(x => ({
+                                order: x.order, 行: Math.ceil(x.order / (s.cols || 1)), 页: x.page, 下标: x.i0, 类型: x.kind, 标题: x.title, adPosition: x.adPosition, 累加不含卡槽: x.countable, 广告位: x.zone, position: x.position, card_slot: x.cardSlot
+            })), null, 2)) + '</pre></details>');
+            html.push('</div>');
+        });
+
+        if (mix.length) {
+            html.push('<div class="card"><div class="stream-title">Mixer / adverts（未插入内容流的广告包）</div>');
+            mix.forEach(s => {
+                html.push('<p>' + escapeHtml(s.name) + '　广告 ' + s.adCount + '　空单 ' + s.emptyCount + '　合计 ' + s.total + '</p>');
+                html.push('<p class="path">' + escapeHtml(s.path) + '</p>');
+                html.push('<div class="chip-row">' + chipsHtml(s.items) + '</div>');
+            });
+            html.push('</div>');
+        }
+
+        box.innerHTML = html.join('');
+        window.__lastCopy = document.getElementById('summary').value;
+        window.__lastTop = top;
+    }
+
+    function parseNow() {
+        const box = document.getElementById('out');
+        const texts = collectSlotTexts();
+        if (!texts.length) {
+            box.innerHTML = '<div class="card err">还没有粘贴接口。先在「接口 1」里贴一页，需要翻页再点「＋ 添加接口」。</div>';
+            window.__lastCopy = '';
+            return;
+        }
+        try {
+            const packs = [];
+            const errs = [];
+            texts.forEach((text, i) => {
+                try {
+                    parseAllPacks(text).forEach(p => {
+                        packs.push({
+                            source: '第' + (packs.length + 1) + '页接口',
+                            data: p.data,
+                            page: packs.length + 1
+                        });
+                    });
+                } catch (e) {
+                    errs.push('接口 ' + (i + 1) + '：' + e.message);
+                }
+            });
+            if (errs.length && !packs.length) throw new Error(errs.join('；'));
+            packs.forEach((p, i) => { p.page = i + 1; p.source = '第' + (i + 1) + '页接口'; });
+            const data = { __packs: packs };
+            window.__lastParsed = data;
+            render(data);
+            if (errs.length) {
+                box.insertAdjacentHTML('afterbegin', '<div class="card err">' + escapeHtml(errs.join('；')) + '</div>');
+            }
+        } catch (e) {
+            box.innerHTML = '<div class="card err">解析失败：' + escapeHtml(e.message) + '</div>';
+            window.__lastCopy = '';
+        }
+    }
+
+    function collectSlotTexts() {
+        return Array.from(document.querySelectorAll('#paste-list .paste-slot textarea'))
+            .map(t => String(t.value || '').trim())
+            .filter(Boolean);
+    }
+
+    function renumberSlots() {
+        document.querySelectorAll('#paste-list .paste-slot').forEach((slot, i) => {
+            const lab = slot.querySelector('.paste-head label');
+            if (lab) lab.textContent = '接口 ' + (i + 1) + '（第 ' + (i + 1) + ' 页）';
+            const ta = slot.querySelector('textarea');
+            if (ta) ta.setAttribute('placeholder', '粘贴第 ' + (i + 1) + ' 页的 recommend / mixer / Charles 响应');
+            const del = slot.querySelector('.btn-del');
+            if (del) del.style.display = document.querySelectorAll('#paste-list .paste-slot').length > 1 ? '' : 'none';
+        });
+    }
+
+    function addPasteSlot(focus) {
+        const list = document.getElementById('paste-list');
+        const slot = document.createElement('div');
+        slot.className = 'paste-slot';
+        slot.innerHTML = '<div class="paste-head"><label></label><button type="button" class="ghost btn-del">删除</button></div>'
+            + '<textarea></textarea>';
+        list.appendChild(slot);
+        slot.querySelector('.btn-del').addEventListener('click', () => {
+            if (document.querySelectorAll('#paste-list .paste-slot').length <= 1) return;
+            slot.remove();
+            renumberSlots();
+        });
+        slot.querySelector('textarea').addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') parseNow();
+        });
+        renumberSlots();
+        if (focus) slot.querySelector('textarea').focus();
+    }
+
+    const shotState = { items: [], tess: null };
+
+    function setShotProgress(t) {
+        const el = document.getElementById('shot-progress');
+        if (el) el.textContent = t || '';
+    }
+
+    function naturalName(a, b) {
+        return String(a).localeCompare(String(b), 'zh', { numeric: true, sensitivity: 'base' });
+    }
+
+    function renderShotList() {
+        const box = document.getElementById('shot-list');
+        if (!box) return;
+        box.innerHTML = shotState.items.map((it, i) => {
+            return '<div class="shot-item">'
+                + '<img alt="" src="' + it.url + '">'
+                + '<div class="shot-name">' + (i + 1) + '. ' + escapeHtml(it.name) + '</div>'
+                + '<div class="shot-tools">'
+                + '<button type="button" data-up="' + i + '">上移</button>'
+                + '<button type="button" data-down="' + i + '">下移</button>'
+                + '<button type="button" data-del="' + i + '">删</button>'
+                + '</div></div>';
+        }).join('');
+        box.querySelectorAll('[data-up]').forEach(btn => btn.addEventListener('click', () => moveShot(+btn.getAttribute('data-up'), -1)));
+        box.querySelectorAll('[data-down]').forEach(btn => btn.addEventListener('click', () => moveShot(+btn.getAttribute('data-down'), 1)));
+        box.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => removeShot(+btn.getAttribute('data-del'))));
+    }
+
+    function moveShot(i, dir) {
+        const j = i + dir;
+        if (j < 0 || j >= shotState.items.length) return;
+        const tmp = shotState.items[i];
+        shotState.items[i] = shotState.items[j];
+        shotState.items[j] = tmp;
+        renderShotList();
+    }
+
+    function removeShot(i) {
+        const it = shotState.items.splice(i, 1)[0];
+        if (it && it.url) URL.revokeObjectURL(it.url);
+        renderShotList();
+    }
+
+    function addShotFiles(fileList) {
+        const files = Array.from(fileList || []).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
+        files.sort((a, b) => naturalName(a.name, b.name));
+        files.forEach(file => {
+            shotState.items.push({
+                file: file,
+                name: file.name,
+                url: URL.createObjectURL(file)
+            });
+        });
+        renderShotList();
+    }
+
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('图片读取失败'));
+            img.src = src;
+        });
+    }
+
+    function drawToCanvas(img, sx, sy, sw, sh) {
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(sw));
+        c.height = Math.max(1, Math.round(sh));
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        return c;
+    }
+
+    function scaleCanvas(src, width) {
+        if (src.width === width) return src;
+        const c = document.createElement('canvas');
+        c.width = width;
+        c.height = Math.max(1, Math.round(src.height * (width / src.width)));
+        c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+        return c;
+    }
+
+    function grayscaleDown(canvas, w) {
+        const s = scaleCanvas(canvas, w);
+        const ctx = s.getContext('2d');
+        const img = ctx.getImageData(0, 0, s.width, s.height);
+        const d = img.data;
+        const g = new Float32Array(s.width * s.height);
+        for (let i = 0, p = 0; i < d.length; i += 4, p++) g[p] = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+        return { w: s.width, h: s.height, g: g };
+    }
+
+    function findOverlapSkip(prev, next) {
+        const W = 72;
+        const a = grayscaleDown(prev, W);
+        const b = grayscaleDown(next, W);
+        const tplH = Math.max(8, Math.min(Math.floor(a.h * 0.2), 70));
+        const tplY = a.h - tplH;
+        const searchMax = Math.max(0, Math.min(Math.floor(b.h * 0.5), b.h - tplH));
+        let best = { score: 1e15, y: 0 };
+        for (let y = 0; y <= searchMax; y++) {
+            let sum = 0, n = 0;
+            for (let yy = 0; yy < tplH; yy += 2) {
+                for (let x = 4; x < W - 4; x += 2) {
+                    const d = a.g[(tplY + yy) * a.w + x] - b.g[(y + yy) * b.w + x];
+                    sum += d * d;
+                    n++;
+                }
+            }
+            const score = sum / (n || 1);
+            if (score < best.score) best = { score: score, y: y };
+        }
+        if (best.score > 2200) return 0;
+        return Math.round(best.y * (next.height / b.h));
+    }
+
+    function stitchCanvases(canvases) {
+        const width = Math.max.apply(null, canvases.map(c => c.width));
+        const scaled = canvases.map(c => scaleCanvas(c, width));
+        const skips = [0];
+        let total = scaled[0].height;
+        for (let i = 1; i < scaled.length; i++) {
+            const skip = Math.min(findOverlapSkip(scaled[i - 1], scaled[i]), scaled[i].height - 8);
+            skips[i] = skip;
+            total += scaled[i].height - skip;
+        }
+        const out = document.createElement('canvas');
+        out.width = width;
+        out.height = total;
+        const ctx = out.getContext('2d');
+        let y = 0;
+        scaled.forEach((c, i) => {
+            const skip = skips[i] || 0;
+            ctx.drawImage(c, 0, skip, c.width, c.height - skip, 0, y, c.width, c.height - skip);
+            y += c.height - skip;
+        });
+        return { canvas: out, skips: skips };
+    }
+
+    function estimateCellHeight(canvas, cols) {
+        const cellW = canvas.width / cols;
+        const sampleW = Math.min(canvas.width, 360);
+        const scale = sampleW / canvas.width;
+        const sh = Math.max(2, Math.round(canvas.height * scale));
+        const tmp = document.createElement('canvas');
+        tmp.width = sampleW;
+        tmp.height = sh;
+        tmp.getContext('2d').drawImage(canvas, 0, 0, sampleW, sh);
+        const data = tmp.getContext('2d').getImageData(0, 0, sampleW, sh).data;
+        const energy = new Float32Array(sh);
+        for (let y = 1; y < sh; y++) {
+            let e = 0;
+            for (let x = 0; x < sampleW; x += 3) {
+                const i = (y * sampleW + x) * 4;
+                const j = ((y - 1) * sampleW + x) * 4;
+                e += Math.abs(data[i] - data[j]) + Math.abs(data[i + 1] - data[j + 1]) + Math.abs(data[i + 2] - data[j + 2]);
+            }
+            energy[y] = e;
+        }
+        const minH = cellW * 0.75;
+        const maxH = cellW * 2.1;
+        let bestP = cellW * 1.35, bestS = -1;
+        for (let p = minH; p <= maxH; p += 3) {
+            const ps = p * scale;
+            if (ps < 6) continue;
+            let s = 0, n = 0;
+            for (let k = 1; k < Math.floor(sh / ps); k++) {
+                const y = Math.round(k * ps);
+                if (y < sh) { s += energy[y]; n++; }
+            }
+            const avg = n ? s / n : 0;
+            if (avg > bestS) { bestS = avg; bestP = p; }
+        }
+        return bestP;
+    }
+
+    function looksLikeAdText(t) {
+        const s = String(t || '').replace(/\s+/g, '');
+        if (!s) return false;
+        if (/广告|廣告|推广|推廣|赞助|贊助/.test(s)) return true;
+        if (/厂告|广吿|厂吿|广吉|廣吿/.test(s)) return true;
+        if (/(^|[^A-Za-z])AD([^A-Za-z]|$)/i.test(String(t || ''))) return true;
+        return false;
+    }
+
+    function mapHitsToOrders(ocr, cellW, cellH, cols, startOrder) {
+        const boxes = [];
+        const pushBox = (text, bbox) => {
+            if (!bbox) return;
+            boxes.push({
+                text: text,
+                x: (bbox.x0 + bbox.x1) / 2,
+                y: (bbox.y0 + bbox.y1) / 2,
+                x0: bbox.x0, y0: bbox.y0, x1: bbox.x1, y1: bbox.y1
+            });
+        };
+        (ocr.words || []).forEach(w => pushBox(w.text, w.bbox));
+        (ocr.lines || []).forEach(w => pushBox(w.text, w.bbox));
+        (ocr.symbols || []).forEach(w => pushBox(w.text, w.bbox));
+        const adBoxes = [];
+        boxes.forEach(b => {
+            if (looksLikeAdText(b.text)) adBoxes.push(b);
+        });
+        const guang = boxes.filter(b => /[广廣厂]/.test(b.text) && b.text.replace(/\s/g, '').length <= 2);
+        const gao = boxes.filter(b => /[告吿吉]/.test(b.text) && b.text.replace(/\s/g, '').length <= 2);
+        guang.forEach(g => {
+            gao.forEach(h => {
+                if (Math.abs(g.x - h.x) < cellW * 0.45 && Math.abs(g.y - h.y) < cellH * 0.35) {
+                    adBoxes.push({ x: (g.x + h.x) / 2, y: (g.y + h.y) / 2, text: g.text + h.text });
+                }
+            });
+        });
+        const orders = new Set();
+        adBoxes.forEach(b => {
+            const col = Math.min(cols, Math.max(1, Math.floor(b.x / cellW) + 1));
+            const row = Math.max(1, Math.floor(b.y / cellH) + 1);
+            const local = (row - 1) * cols + col;
+            orders.add(local + startOrder - 1);
+        });
+        return Array.from(orders).sort((a, b) => a - b);
+    }
+
+    async function getTess(onLog) {
+        if (typeof Tesseract === 'undefined') throw new Error('识别库未加载，请检查网络后刷新页面');
+        if (shotState.tess) return shotState.tess;
+        setShotProgress('正在加载中文识别库（首次较慢）…');
+        const worker = await Tesseract.createWorker('chi_sim', 1, {
+            logger: m => {
+                if (!m) return;
+                if (onLog) onLog(m);
+                if (m.status && m.progress != null) {
+                    setShotProgress((m.status || '识别') + ' ' + Math.round((m.progress || 0) * 100) + '%');
+                }
+            }
+        });
+        shotState.tess = worker;
+        return worker;
+    }
+
+    function expectedTails(maxOrder, cols, group) {
+        const maxRow = Math.max(4, Math.ceil(maxOrder / cols));
+        return theoreticalAdRows(maxRow, group).map(row => ({ row: row, order: row * cols }));
+    }
+
+    function backendAdOrders(top) {
+        if (!top || !top.items) return [];
+        return top.items.filter(x => x.kind === 'ad' || x.kind === 'empty').map(x => x.order).sort((a, b) => a - b);
+    }
+
+    function concludeShot(shotAds, expectList, backendAds, cols, lastVisible) {
+        const expectSet = new Set(expectList.map(x => x.order));
+        const shotSet = new Set(shotAds);
+        const cap = lastVisible || (shotAds.length ? Math.max.apply(null, shotAds) : 0);
+        const visibleExpect = expectList.filter(x => !cap || x.order <= cap);
+        const leak = visibleExpect.filter(x => !shotSet.has(x.order));
+        const extra = shotAds.filter(o => !expectSet.has(o));
+        const hit = shotAds.filter(o => expectSet.has(o));
+        const ok = leak.length === 0 && extra.length === 0 && shotAds.length > 0;
+        const lines = [];
+        if (!shotAds.length) {
+            lines.push('截图里没有识别到「广告」角标。可能角标太小、被裁掉，或不是文字水印。');
+        } else if (ok) {
+            lines.push('结论：插入位置正确。截图广告格与实验组尾帧一致。');
+        } else {
+            lines.push('结论：插入位置不正确。');
+            leak.forEach(x => {
+                lines.push('漏插：第 ' + x.row + ' 行尾帧（第 ' + x.order + ' 格）预期是广告，截图该格没有识别到广告。');
+            });
+            extra.forEach(o => {
+                const row = Math.ceil(o / cols);
+                const col = ((o - 1) % cols) + 1;
+                lines.push('插错：截图第 ' + o + ' 格（第' + row + '行第' + col + '格）有广告，但不是实验组尾帧。');
+            });
+        }
+        if (backendAds && backendAds.length) {
+            const bset = new Set(backendAds);
+            const shotNotBack = shotAds.filter(o => !bset.has(o));
+            const backNotShot = backendAds.filter(o => !cap || o <= cap).filter(o => !shotSet.has(o));
+            if (!shotNotBack.length && !backNotShot.length) {
+                lines.push('和后端广告格一致。');
+            } else {
+                if (backNotShot.length) lines.push('后端有、截图没有：' + backNotShot.join('、') + '（前端可能没渲染，或截图没拍到）。');
+                if (shotNotBack.length) lines.push('截图有、后端列表没有：' + shotNotBack.join('、') + '（前端插位和接口不一致）。');
+            }
+        }
+        return { ok: ok && shotAds.length > 0, warn: !shotAds.length, hit: hit, leak: leak, extra: extra, lines: lines };
+    }
+
+    function canvasToJpegBase64(canvas, maxW) {
+        let src = canvas;
+        if (canvas.width > maxW) src = scaleCanvas(canvas, maxW);
+        const dataUrl = src.toDataURL("image/jpeg", 0.72);
+        return dataUrl.split(",")[1];
+    }
+
+    function aiServerBase() {
+        if (location.protocol === "http:" && location.hostname === "127.0.0.1") {
+            return location.origin;
+        }
+        return "http://127.0.0.1:8788";
+    }
+
+    async function probeAiHealth() {
+        const el = document.getElementById("shot-health");
+        try {
+            const r = await fetch(aiServerBase() + "/api/health", { method: "GET" });
+            const j = await r.json();
+            if (el) {
+                el.textContent = j.ok
+                    ? ("AI 服务已连接" + (j.sdk ? "" : "（还没装 @cursor/sdk，请在目录里 npm install）") + (j.hasEnvKey ? "，已读到环境变量密钥" : "，请在上面填写 API Key"))
+                    : "AI 服务异常";
+            }
+            return j;
+        } catch (_) {
+            if (el) el.textContent = "AI 服务未启动。双击「启动AI识别服务.command」后，用 http://127.0.0.1:8788 打开本页。";
+            return null;
+        }
+    }
+
+    function renderAiVerdict(result, expectList, backendAds, filenames, stitchUrl) {
+        const shotAds = (result.shotAds || []).slice().sort((a, b) => a - b);
+        const leak = result.leaks || [];
+        const extra = result.extras || [];
+        const ok = result.ok === true;
+        const warn = !shotAds.length;
+        const html = [];
+        html.push('<div class="card">');
+        html.push('<div class="' + (warn ? "verdict-warn" : (ok ? "verdict-ok" : "verdict-bad")) + '">' + escapeHtml(result.summary || (ok ? "插入正确" : "插入不正确")) + "</div>");
+        html.push('<div class="stats" style="margin-top:12px">');
+        html.push('<div class="stat"><b>' + shotState.items.length + "</b><span>截图张数</span></div>");
+        html.push('<div class="stat ad"><b>' + shotAds.length + "</b><span>AI 识别广告格</span></div>");
+        html.push('<div class="stat empty"><b>' + leak.length + "</b><span>漏插</span></div>");
+        html.push('<div class="stat slot"><b>' + extra.length + "</b><span>插错/多插</span></div>");
+        html.push("</div>");
+        html.push('<p class="okline">拼接/阅读顺序：' + escapeHtml((result.pageOrder || filenames).join(" → ")) + "</p>");
+        html.push("<p>实验组预期尾帧：" + expectList.map((x) => x.order + "(第" + x.row + "行)").join("、") + "</p>");
+        html.push("<p>AI 识别广告格：" + (shotAds.join("、") || "无") + "</p>");
+        if (backendAds.length) html.push("<p>已解析后端广告格：" + backendAds.join("、") + "</p>");
+        html.push('<ul style="margin:8px 0 8px 18px;font-size:13px">');
+        (result.details || []).forEach((line) => html.push("<li>" + escapeHtml(line) + "</li>"));
+        leak.forEach((x) => html.push("<li>" + escapeHtml("漏插：第 " + (x.row || "?") + " 行 / 第 " + x.order + " 格　" + (x.reason || "")) + "</li>"));
+        extra.forEach((x) => html.push("<li>" + escapeHtml("插错：第 " + x.order + " 格　" + (x.reason || "")) + "</li>"));
+        html.push("</ul>");
+        html.push('<p class="hint">本次由 Cursor Agent 识图（和对话同一套接口），不是本地 OCR。</p>');
+        if (stitchUrl) html.push('<img class="stitch-preview" alt="拼接预览" src="' + stitchUrl + '">');
+        html.push("</div>");
+        return html.join("");
+    }
+
+    async function recognizeByAi(canvases, layout, startOrder, expectList, backendAds) {
+        const health = await probeAiHealth();
+        if (!health || !health.ok) throw new Error("AI 服务未启动。请先运行 node shot_ai_server.mjs");
+        if (!health.sdk) throw new Error("还没安装 @cursor/sdk，在「数据改造」目录执行 npm install");
+        const keyEl = document.getElementById("shot-key");
+        const apiKey = ((keyEl && keyEl.value) || localStorage.getItem("cursor_api_key") || "").trim();
+        if (apiKey && keyEl) localStorage.setItem("cursor_api_key", apiKey);
+        const images = canvases.map((c, i) => ({
+            name: (shotState.items[i] && shotState.items[i].name) || ("shot-" + (i + 1) + ".jpg"),
+            mimeType: "image/jpeg",
+            data: canvasToJpegBase64(c, 1280),
+        }));
+        const model = ((document.getElementById("shot-model") || {}).value) || "auto";
+        setShotProgress("正在调用 Cursor AI 识图（" + images.length + " 张）…");
+        const r = await fetch(aiServerBase() + "/api/ai-vision", {
+            method: "POST",
+            headers: Object.assign(
+                { "Content-Type": "application/json" },
+                apiKey ? { "x-cursor-api-key": apiKey } : {}
+            ),
+            body: JSON.stringify({
+                model: model,
+                images: images,
+                context: {
+                    cols: layout.cols,
+                    group: layout.group,
+                    startOrder: startOrder,
+                    expectOrders: expectList.map((x) => x.order),
+                    backendAds: backendAds,
+                    filenames: shotState.items.map((x) => x.name),
+                },
+            }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+        return j.result;
+    }
+
+    async function recognizeShots() {
+        const out = document.getElementById('shot-out');
+        if (!shotState.items.length) {
+            out.innerHTML = '<div class="card err">还没有截图。点「添加截图」上传实际前端瀑布流页面。</div>';
+            return;
+        }
+        const layout = getLayoutSettings();
+        const cols = layout.cols;
+        const startOrder = Math.max(1, parseInt((document.getElementById('shot-start') || {}).value, 10) || 1);
+        const topPct = Math.max(0, Math.min(40, parseInt((document.getElementById('shot-topcrop') || {}).value, 10) || 0)) / 100;
+        const botPct = Math.max(0, Math.min(40, parseInt((document.getElementById('shot-botcrop') || {}).value, 10) || 0)) / 100;
+        const mode = ((document.getElementById('shot-mode') || {}).value) || 'ai';
+        try {
+            setShotProgress('正在读取 ' + shotState.items.length + ' 张截图…');
+            const canvases = [];
+            for (let i = 0; i < shotState.items.length; i++) {
+                const img = await loadImage(shotState.items[i].url);
+                const y0 = Math.round(img.height * topPct);
+                const y1 = Math.round(img.height * (1 - botPct));
+                canvases.push(drawToCanvas(img, 0, y0, img.width, Math.max(1, y1 - y0)));
+            }
+            setShotProgress('正在按顺序拼接（识别滚动重叠）…');
+            const stitched = stitchCanvases(canvases);
+            const canvas = stitched.canvas;
+            const cellH = estimateCellHeight(canvas, cols);
+            const rows = Math.max(1, Math.round(canvas.height / cellH));
+            const lastVisible = rows * cols + startOrder - 1;
+            const expectList = expectedTails(Math.max(lastVisible, (window.__lastTop && window.__lastTop.total) || 0), cols, layout.group);
+            const backendAds = backendAdOrders(window.__lastTop);
+            if (mode === 'ai') {
+                const result = await recognizeByAi(canvases, layout, startOrder, expectList, backendAds);
+                out.innerHTML = renderAiVerdict(result, expectList, backendAds, shotState.items.map(x => x.name), canvas.toDataURL('image/jpeg', 0.7));
+                setShotProgress('AI 识别完成');
+                return;
+            }
+            const cellW = canvas.width / cols;
+            const worker = await getTess();
+            setShotProgress('正在识别「广告」文字…');
+            const ocr = await worker.recognize(canvas);
+            const shotAds = mapHitsToOrders(ocr.data || {}, cellW, cellH, cols, startOrder);
+            const maxOrder = Math.max(lastVisible, shotAds[shotAds.length - 1] || 0, (window.__lastTop && window.__lastTop.total) || 0);
+            const verdict = concludeShot(shotAds, expectList, backendAds, cols, lastVisible);
+            const html = [];
+            html.push('<div class="card">');
+            html.push('<div class="' + (verdict.warn ? 'verdict-warn' : (verdict.ok ? 'verdict-ok' : 'verdict-bad')) + '">' + escapeHtml(verdict.lines[0]) + '</div>');
+            html.push('<div class="stats" style="margin-top:12px">');
+            html.push('<div class="stat"><b>' + shotState.items.length + '</b><span>截图张数</span></div>');
+            html.push('<div class="stat ad"><b>' + shotAds.length + '</b><span>截图识别广告格</span></div>');
+            html.push('<div class="stat content"><b>' + verdict.hit.length + '</b><span>命中预期尾帧</span></div>');
+            html.push('<div class="stat empty"><b>' + verdict.leak.length + '</b><span>漏插</span></div>');
+            html.push('<div class="stat slot"><b>' + verdict.extra.length + '</b><span>插错/多插</span></div>');
+            html.push('</div>');
+            html.push('<p class="okline">拼接顺序：' + shotState.items.map((x, i) => (i + 1) + '.' + x.name).join(' → ') + '</p>');
+            html.push('<p>实验组预期尾帧：' + expectList.filter(x => x.order <= maxOrder).map(x => x.order + '(第' + x.row + '行)').join('、') + '</p>');
+            html.push('<p>截图识别广告格：' + (shotAds.join('、') || '无') + '</p>');
+            if (backendAds.length) html.push('<p>已解析后端广告格：' + backendAds.join('、') + '</p>');
+            html.push('<ul style="margin:8px 0 8px 18px;font-size:13px">');
+            verdict.lines.slice(1).forEach(line => html.push('<li>' + escapeHtml(line) + '</li>'));
+            html.push('</ul>');
+            html.push('<p class="hint">本次是本地 OCR。角标过小可能漏检，建议改用 Cursor AI 识图。</p>');
+            html.push('<img class="stitch-preview" alt="拼接预览" src="' + canvas.toDataURL('image/jpeg', 0.7) + '">');
+            html.push('</div>');
+            out.innerHTML = html.join('');
+            setShotProgress('识别完成');
+        } catch (e) {
+            out.innerHTML = '<div class="card err">截图识别失败：' + escapeHtml(e.message) + '</div>';
+            setShotProgress('');
+        }
+    }
+
+    document.getElementById('btn-parse').addEventListener('click', parseNow);
+    document.getElementById('btn-add').addEventListener('click', () => addPasteSlot(true));
+    document.getElementById('btn-clear').addEventListener('click', () => {
+        document.getElementById('paste-list').innerHTML = '';
+        addPasteSlot(false);
+        document.getElementById('out').innerHTML = '';
+        window.__lastCopy = '';
+        window.__lastParsed = null;
+        window.__lastTop = null;
+    });
+    document.getElementById('btn-copy').addEventListener('click', async () => {
+        const t = window.__lastCopy || (document.getElementById('summary') && document.getElementById('summary').value) || '';
+        if (!t) return;
+        try { await navigator.clipboard.writeText(t); } catch (_) {
+            const ta = document.getElementById('summary');
+            if (ta) { ta.select(); document.execCommand('copy'); }
+        }
+    });
+    ['cols-input', 'group-select', 'platform-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', () => { if (window.__lastParsed) render(window.__lastParsed); });
+        el.addEventListener('input', () => { if (window.__lastParsed) render(window.__lastParsed); });
+    });
+    addPasteSlot(false);
+
+    const shotDrop = document.getElementById('shot-drop');
+    const shotInput = document.getElementById('shot-files');
+    if (shotDrop && shotInput) {
+        shotDrop.addEventListener('click', () => shotInput.click());
+        shotDrop.addEventListener('dragover', (e) => { e.preventDefault(); shotDrop.classList.add('drag'); });
+        shotDrop.addEventListener('dragleave', () => shotDrop.classList.remove('drag'));
+        shotDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            shotDrop.classList.remove('drag');
+            addShotFiles(e.dataTransfer.files);
+        });
+        shotInput.addEventListener('change', () => {
+            addShotFiles(shotInput.files);
+            shotInput.value = '';
+        });
+    }
+    const btnShot = document.getElementById('btn-shot');
+    if (btnShot) btnShot.addEventListener('click', recognizeShots);
+    const btnShotClear = document.getElementById('btn-shot-clear');
+    if (btnShotClear) btnShotClear.addEventListener('click', () => {
+        shotState.items.forEach(it => { if (it.url) URL.revokeObjectURL(it.url); });
+        shotState.items = [];
+        renderShotList();
+        const so = document.getElementById('shot-out');
+        if (so) so.innerHTML = '';
+        setShotProgress('');
+    });
+    const keyInput = document.getElementById('shot-key');
+    if (keyInput) {
+        keyInput.value = localStorage.getItem('cursor_api_key') || '';
+        keyInput.addEventListener('change', () => {
+            const v = keyInput.value.trim();
+            if (v) localStorage.setItem('cursor_api_key', v);
+        });
+    }
+    probeAiHealth();
+})();
+</script>
+</body>
+</html>

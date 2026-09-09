@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charles Mixer 实时对比</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --ok: #22c55e;
+            --warn: #eab308;
+            --err: #ef4444;
+            --bg: #f1f5f9;
+            --card: #fff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; background: var(--bg); color: var(--text); }
+        header {
+            background: linear-gradient(120deg, #4361ee, #3730a3);
+            color: #fff;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            position: sticky; top: 0; z-index: 20;
+        }
+        header h1 { font-size: 1.05rem; }
+        .status { font-size: 0.82rem; opacity: 0.95; }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: #fca5a5; }
+        .dot.on { background: #86efac; }
+        .wrap { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        input[type="text"], input[type="search"] {
+            flex: 1; min-width: 180px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc;
+        }
+        .btn {
+            border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; background: var(--primary); color: #fff;
+        }
+        .btn.sec { background: #e2e8f0; color: var(--text); }
+        .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn.sm { padding: 4px 8px; font-size: 0.78rem; }
+        .chip { padding: 4px 10px; border-radius: 999px; background: #e2e8f0; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; }
+        .chip.on { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+        .hint { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+        .warnbox { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { color: var(--muted); font-weight: 600; }
+        tr.active-ref { background: #ecfdf5; }
+        tr.active-act { background: #eff6ff; }
+        .url { word-break: break-all; color: #334155; max-width: 520px; }
+        .check-row { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 0.82rem; color: var(--muted); margin: 8px 0; }
+        .stat-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+        .stat-pill { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: #e2e8f0; }
+        .stat-pill.ok { background: #dcfce7; color: #166534; }
+        .stat-pill.warn { background: #fef9c3; color: #854d0e; }
+        .stat-pill.err { background: #fee2e2; color: #991b1b; }
+        .block-card { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .block-card.match { border-left: 4px solid var(--ok); }
+        .block-card.warn { border-left: 4px solid var(--warn); }
+        .block-card.err { border-left: 4px solid var(--err); }
+        .block-head { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .block-keys { width: 100%; font-size: 0.78rem; color: var(--muted); }
+        .block-keys code { background: #fef9c3; padding: 1px 5px; border-radius: 4px; margin-right: 4px; }
+        .block-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        @media (max-width: 800px) { .block-grid { grid-template-columns: 1fr; } }
+        .block-pane { overflow: auto; max-height: 420px; font-family: ui-monospace, Menlo, monospace; font-size: 0.74rem; background: #0f172a; color: #e2e8f0; }
+        .block-pane + .block-pane { border-left: 1px solid #334155; }
+        .pane-lab { position: sticky; top: 0; padding: 6px 10px; font-size: 0.72rem; font-weight: 700; background: #1e293b; color: #94a3b8; }
+        .dl-line { padding: 0 10px; white-space: pre-wrap; word-break: break-all; }
+        .dl-line.same { color: #cbd5e1; }
+        .dl-line.chg { background: #422006; color: #fde68a; }
+        .dl-line.del { background: #450a0a; color: #fca5a5; }
+        .dl-line.add { background: #052e16; color: #86efac; }
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 8px; opacity: 0; transition: .2s; z-index: 50; }
+        #toast.show { opacity: 1; }
+        .picked { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+        .picked b { color: var(--text); }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Charles Mixer 实时对比</h1>
+    <div class="status"><span class="dot" id="dot"></span><span id="status-text">检测 Charles…</span></div>
+</header>
+<div class="wrap">
+    <div class="card">
+        <div id="setup" class="warnbox" style="display:none">
+            Charles 已开，但 <b>Web Interface 未开启</b>。请到 Charles：<b>Proxy → Web Interface Settings</b>，勾选 Enable Web Interface，并允许匿名访问。开完后点「立即拉取」。
+        </div>
+        <div class="row">
+            <input id="q" type="search" value="" placeholder="筛选：留空=Charles 里全部包（含手机）">
+            <button class="btn" id="btn-pull">立即拉取</button>
+            <button class="btn ghost" id="btn-live">实时：关</button>
+            <label class="btn ghost">导入 HAR/chlsj<input id="file" type="file" accept=".har,.chlsj,.json,.txt" hidden></label>
+        </div>
+        <div class="row" style="margin-top:8px">
+            <span class="chip on" data-q="">全部</span>
+            <span class="chip" data-q="手机">手机</span>
+            <span class="chip" data-q="本机">本机</span>
+            <span class="chip" data-q="mixer">mixer</span>
+            <span class="chip" data-q="cupid">cupid</span>
+            <span class="chip" data-q="t7z">t7z 监测</span>
+        </div>
+        <p class="hint">每次拉取都会让 Charles 把当前 session 整包导出，很吃内存。<b>默认不要开实时</b>，用完点「立即拉取」即可。Charles 里先 Focus mixer 域名、清掉旧 session，避免 Java heap 爆掉。</p>
+        <div class="picked">参考：<b id="lab-ref">未选</b>　待测：<b id="lab-act">未选</b></div>
+    </div>
+    <div class="card">
+        <div class="stat-bar" id="list-sum"></div>
+        <div style="overflow:auto;max-height:320px">
+            <table>
+                <thead>
+                    <tr><th></th><th>来源</th><th>时间</th><th>状态</th><th>方法</th><th>Host / Path</th><th>广告位</th><th>大小</th></tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="row">
+            <button class="btn" id="btn-cmp">比对选中的两包</button>
+            <label class="chip"><input type="checkbox" id="only-diff" checked> 只看有差异的块</label>
+            <label class="chip"><input type="checkbox" id="align-ads" checked> 按广告位对齐</label>
+            <label class="chip"><input type="checkbox" id="ignore-vast" checked> 忽略 vastObject</label>
+        </div>
+        <div class="stat-bar" id="cmp-sum"></div>
+        <div id="cmp-out"></div>
+    </div>
+</div>
+<div id="toast"></div>
+<script>
+(function () {
+    const $ = (id) => document.getElementById(id);
+    let live = false, timer = null, items = [];
+    let refId = null, actId = null, refBody = '', actBody = '';
+    let lastBlocks = [];
+
+    function toast(msg) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2200);
+    }
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    async function checkStatus() {
+        try {
+            const r = await fetch('/api/status').then(x => x.json());
+            $('dot').classList.toggle('on', !!r.web_interface);
+            if (!r.charles) $('status-text').textContent = '连不上 Charles :8888';
+            else if (!r.web_interface) {
+                $('status-text').textContent = 'Charles 在线 · Web Interface 未开';
+                $('setup').style.display = 'block';
+            } else {
+                $('status-text').textContent = 'Charles 在线 · 可实时拉取';
+                $('setup').style.display = 'none';
+            }
+        } catch {
+            $('status-text').textContent = '本服务未就绪';
+        }
+    }
+    function renderList() {
+        const tb = $('tbody');
+        if (!items.length) {
+            tb.innerHTML = '<tr><td colspan="8" style="color:#64748b">Charles session 里还没有包。手机请确认已连同一 WiFi、代理指向电脑 8888，并装了 Charles 证书。</td></tr>';
+            return;
+        }
+        tb.innerHTML = items.map(e => {
+            const cls = e.id === refId ? 'active-ref' : (e.id === actId ? 'active-act' : '');
+            const t = (e.started || '').replace('T', ' ').slice(0, 19);
+            const src = e.source || '未知';
+            const srcColor = src === '手机' ? '#7c3aed' : (src === '本机' ? '#0369a1' : '#64748b');
+            return `<tr class="${cls}">
+                <td><button class="btn sm sec" data-ref="${e.id}">参考</button>
+                    <button class="btn sm" data-act="${e.id}">待测</button></td>
+                <td><b style="color:${srcColor}">${escapeHtml(src)}</b><br><span style="color:#64748b">${escapeHtml(e.client || '')}</span></td>
+                <td>${escapeHtml(t)}</td>
+                <td>${e.status}</td>
+                <td>${escapeHtml(e.method)}</td>
+                <td class="url"><b>${escapeHtml(e.host)}</b><br>${escapeHtml(e.path)}</td>
+                <td>${escapeHtml(e.zones || '-')}<br><span style="color:#64748b">${escapeHtml(e.templates || '')}</span></td>
+                <td>${e.size}</td>
+            </tr>`;
+        }).join('');
+        tb.querySelectorAll('[data-ref]').forEach(b => b.onclick = () => pick(b.dataset.ref, 'ref'));
+        tb.querySelectorAll('[data-act]').forEach(b => b.onclick = () => pick(b.dataset.act, 'act'));
+    }
+    async function pick(id, which) {
+        const e = await fetch('/api/entry?id=' + encodeURIComponent(id)).then(x => x.json());
+        if (!e.ok) { toast('包内容读不到了，再拉一次'); return; }
+        if (which === 'ref') { refId = id; refBody = e.body; $('lab-ref').textContent = e.host + e.path; }
+        else { actId = id; actBody = e.body; $('lab-act').textContent = e.host + e.path; }
+        renderList();
+        toast(which === 'ref' ? '已设为参考' : '已设为待测');
+    }
+    async function pull() {
+        const q = $('q').value;
+        const r = await fetch('/api/entries?q=' + encodeURIComponent(q)).then(x => x.json());
+        if (r.reason === 'web_interface_disabled') {
+            $('setup').style.display = 'block';
+            $('dot').classList.remove('on');
+            $('status-text').textContent = '请先开启 Web Interface';
+        }
+        items = r.items || [];
+        $('list-sum').innerHTML = `<span class="stat-pill">session ${r.raw_count || 0}</span>
+            <span class="stat-pill ok">展示 ${r.shown || 0}</span>
+            <span class="stat-pill">手机 ${r.phone || 0}</span>
+            <span class="stat-pill">本机 ${r.local || 0}</span>`;
+        renderList();
+    }
+    $('btn-pull').onclick = pull;
+    $('btn-live').onclick = () => {
+        live = !live;
+        $('btn-live').textContent = '实时：' + (live ? '开' : '关');
+        $('btn-live').className = live ? 'btn sec' : 'btn ghost';
+        if (live) loop();
+        else if (timer) clearInterval(timer);
+    };
+    document.querySelectorAll('.chip[data-q]').forEach(c => {
+        c.onclick = () => {
+            document.querySelectorAll('.chip[data-q]').forEach(x => x.classList.remove('on'));
+            c.classList.add('on');
+            $('q').value = c.dataset.q;
+            pull();
+        };
+    });
+    $('q').addEventListener('keydown', e => { if (e.key === 'Enter') pull(); });
+    $('file').onchange = async (ev) => {
+        const f = ev.target.files[0];
+        if (!f) return;
+        const buf = await f.arrayBuffer();
+        const r = await fetch('/api/import', { method: 'POST', body: buf }).then(x => x.json());
+        toast(r.ok ? '导入 ' + r.count + ' 条' : '导入失败：' + r.reason);
+        if (r.ok) pull();
+    };
+    function loop() {
+        if (timer) clearInterval(timer);
+        pull();
+        timer = setInterval(() => { if (live) pull(); }, 15000);
+    }
+
+    /* ---- 块对比（与暖风工具同一套） ---- */
+    const AD_HINTS = ['adZoneId', 'templateType', 'creativeObject', 'emptyTracking', 'clickThroughType'];
+    const ARRAY_KEYS = ['ads', 'adList', 'adInfos', 'slots', 'adSlots', 'ad'];
+    function tryParseJsonLoose(text) {
+        try { return JSON.parse(text); } catch {
+            let s = text.replace(/^\uFEFF/, '').trim();
+            s = s.replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":');
+            return JSON.parse(s);
+        }
+    }
+    function unwrapMixerPayload(data) {
+        if (data == null) return data;
+        if (typeof data === 'string') { try { data = tryParseJsonLoose(data); } catch { return data; } }
+        if (Array.isArray(data)) return data;
+        if (data && typeof data === 'object') {
+            for (const k of ARRAY_KEYS) if (Array.isArray(data[k])) return data;
+            for (const wrap of ['data', 'result', 'body', 'response', 'payload']) {
+                if (data[wrap] != null) return unwrapMixerPayload(data[wrap]);
+            }
+        }
+        return data;
+    }
+    function looksLikeAd(x) {
+        return !!(x && typeof x === 'object' && !Array.isArray(x) && AD_HINTS.some(k => k in x));
+    }
+    function adAlignKey(ad, idx) {
+        if (!ad || typeof ad !== 'object' || Array.isArray(ad)) return '#' + idx;
+        const z = ad.adZoneId != null ? String(ad.adZoneId) : '';
+        const t = ad.templateType != null ? String(ad.templateType) : '';
+        const ctt = ad.clickThroughType != null ? String(ad.clickThroughType) : '';
+        const c = ad.comment != null ? String(ad.comment).slice(0, 40) : '';
+        if (z || t) return (z || 'na') + ' · ' + (t || 'na') + (ctt !== '' ? ' · ctt' + ctt : '') + (c ? ' · ' + c : '');
+        return '#' + idx;
+    }
+    function sanitizeNode(val, opt) {
+        if (val == null || typeof val !== 'object') return val;
+        if (Array.isArray(val)) return val.map(x => sanitizeNode(x, opt));
+        const o = {};
+        Object.keys(val).forEach(k => {
+            if (opt.ignoreVast && (k === 'vastObject' || k === 'vast')) return;
+            o[k] = sanitizeNode(val[k], opt);
+        });
+        return o;
+    }
+    function collectBlocks(data, path) {
+        const blocks = [];
+        if (Array.isArray(data)) {
+            data.forEach((item, i) => {
+                const p = (path || 'ads') + '[' + i + ']';
+                if (item && Array.isArray(item.ads)) {
+                    item.ads.forEach((ad, ai) => blocks.push({ path: p + '.ads[' + ai + ']', title: adAlignKey(ad, ai), value: ad }));
+                } else blocks.push({ path: p, title: adAlignKey(item, i), value: item });
+            });
+            return blocks;
+        }
+        if (data && typeof data === 'object') {
+            const consumed = new Set();
+            Object.keys(data).forEach(k => {
+                const v = data[k];
+                const p = path ? path + '.' + k : k;
+                if (!Array.isArray(v)) return;
+                const isAdArr = ARRAY_KEYS.includes(k) || v.some(looksLikeAd) || (v[0] && Array.isArray(v[0].ads));
+                if (!isAdArr) return;
+                consumed.add(k);
+                v.forEach((item, i) => {
+                    const ip = p + '[' + i + ']';
+                    if (item && Array.isArray(item.ads)) {
+                        item.ads.forEach((ad, ai) => blocks.push({ path: ip + '.ads[' + ai + ']', title: adAlignKey(ad, ai), value: ad }));
+                    } else blocks.push({ path: ip, title: adAlignKey(item, i), value: item });
+                });
+            });
+            const rest = {};
+            Object.keys(data).forEach(k => { if (!consumed.has(k)) rest[k] = data[k]; });
+            if (Object.keys(rest).length) blocks.push({ path: path || 'envelope', title: '整包其它字段', value: rest });
+            return blocks;
+        }
+        blocks.push({ path: path || 'root', title: 'root', value: data });
+        return blocks;
+    }
+    function alignBlockLists(refBlocks, actBlocks, alignAds) {
+        const pairs = [];
+        if (!alignAds) {
+            const n = Math.max(refBlocks.length, actBlocks.length);
+            for (let i = 0; i < n; i++) {
+                pairs.push({ title: (refBlocks[i] || actBlocks[i]).title, path: (refBlocks[i] || actBlocks[i]).path, ref: refBlocks[i] && refBlocks[i].value, act: actBlocks[i] && actBlocks[i].value });
+            }
+            return pairs;
+        }
+        const usedAct = new Set();
+        refBlocks.forEach(rb => {
+            let ai = actBlocks.findIndex((ab, j) => !usedAct.has(j) && ab.title === rb.title);
+            if (ai < 0) ai = actBlocks.findIndex((ab, j) => !usedAct.has(j) && ab.path === rb.path);
+            if (ai >= 0) usedAct.add(ai);
+            pairs.push({ title: rb.title, path: rb.path, ref: rb.value, act: ai >= 0 ? actBlocks[ai].value : undefined });
+        });
+        actBlocks.forEach((ab, j) => { if (!usedAct.has(j)) pairs.push({ title: ab.title, path: ab.path, ref: undefined, act: ab.value }); });
+        return pairs;
+    }
+    function lineLcs(a, b) {
+        const n = a.length, m = b.length;
+        if (n * m > 800000) {
+            const rows = [];
+            const L = Math.max(n, m);
+            for (let i = 0; i < L; i++) {
+                const Lline = i < n ? a[i] : null, Rline = i < m ? b[i] : null;
+                let type = 'same';
+                if (Lline == null) type = 'add'; else if (Rline == null) type = 'del'; else if (Lline !== Rline) type = 'chg';
+                rows.push({ L: Lline, R: Rline, type });
+            }
+            return rows;
+        }
+        const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+        for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++)
+            dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+        const rows = [];
+        let i = n, j = m;
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) { rows.push({ L: a[i - 1], R: b[j - 1], type: 'same' }); i--; j--; }
+            else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) { rows.push({ L: null, R: b[j - 1], type: 'add' }); j--; }
+            else { rows.push({ L: a[i - 1], R: null, type: 'del' }); i--; }
+        }
+        rows.reverse();
+        const merged = [];
+        for (let k = 0; k < rows.length; k++) {
+            if (rows[k].type === 'del' && rows[k + 1] && rows[k + 1].type === 'add') {
+                merged.push({ L: rows[k].L, R: rows[k + 1].R, type: 'chg' }); k++;
+            } else merged.push(rows[k]);
+        }
+        return merged;
+    }
+    function changedTopKeys(a, b) {
+        const keys = new Set([
+            ...((a && typeof a === 'object' && !Array.isArray(a)) ? Object.keys(a) : []),
+            ...((b && typeof b === 'object' && !Array.isArray(b)) ? Object.keys(b) : [])
+        ]);
+        const out = [];
+        keys.forEach(k => {
+            const sa = a && typeof a === 'object' ? JSON.stringify(a[k]) : undefined;
+            const sb = b && typeof b === 'object' ? JSON.stringify(b[k]) : undefined;
+            if (sa !== sb) out.push(k);
+        });
+        return out;
+    }
+    function renderPane(lab, lines) {
+        const body = !lines.length ? '<div class="dl-line">（缺失）</div>' :
+            lines.map(x => '<div class="dl-line ' + x.cls + '">' + (x.text == null ? '' : escapeHtml(x.text)) + '</div>').join('');
+        return '<div class="block-pane"><div class="pane-lab">' + escapeHtml(lab) + '</div>' + body + '</div>';
+    }
+    function renderBlocks() {
+        const onlyDiff = $('only-diff').checked;
+        const shown = lastBlocks.filter(b => !onlyDiff || b.cls !== 'match');
+        if (!shown.length) { $('cmp-out').innerHTML = '<p class="hint">两边对应块完全一致</p>'; return; }
+        $('cmp-out').innerHTML = shown.map(b => {
+            const chips = b.keys.length ? '<div class="block-keys">改动字段：' + b.keys.map(k => '<code>' + escapeHtml(k) + '</code>').join('') + '</div>' : '';
+            const left = [], right = [];
+            b.lcs.forEach(row => {
+                if (row.type === 'same') { left.push({ text: row.L, cls: 'same' }); right.push({ text: row.R, cls: 'same' }); }
+                else if (row.type === 'chg') { left.push({ text: row.L, cls: 'chg' }); right.push({ text: row.R, cls: 'chg' }); }
+                else if (row.type === 'del') { left.push({ text: row.L, cls: 'del' }); right.push({ text: '', cls: 'del' }); }
+                else { left.push({ text: '', cls: 'add' }); right.push({ text: row.R, cls: 'add' }); }
+            });
+            return '<div class="block-card ' + b.cls + '"><div class="block-head"><strong>' + escapeHtml(b.title) + '</strong><span class="chip">' + escapeHtml(b.status) + '</span><span style="color:#64748b">' + escapeHtml(b.path) + '</span>' + chips + '</div><div class="block-grid">' + renderPane('参考', left) + renderPane('待测', right) + '</div></div>';
+        }).join('');
+    }
+    $('btn-cmp').onclick = () => {
+        if (!refBody || !actBody) { toast('先选参考和待测两包'); return; }
+        let refObj, actObj;
+        try { refObj = unwrapMixerPayload(tryParseJsonLoose(refBody)); }
+        catch (e) { toast('参考不是 JSON'); return; }
+        try { actObj = unwrapMixerPayload(tryParseJsonLoose(actBody)); }
+        catch (e) { toast('待测不是 JSON'); return; }
+        const opt = { ignoreVast: $('ignore-vast').checked, alignAds: $('align-ads').checked };
+        const pairs = alignBlockLists(collectBlocks(refObj, ''), collectBlocks(actObj, ''), opt.alignAds);
+        let same = 0, diff = 0, missAct = 0, missRef = 0;
+        lastBlocks = pairs.map(p => {
+            const r = p.ref === undefined ? undefined : sanitizeNode(p.ref, opt);
+            const a = p.act === undefined ? undefined : sanitizeNode(p.act, opt);
+            const rText = r === undefined ? '' : JSON.stringify(r, null, 2);
+            const aText = a === undefined ? '' : JSON.stringify(a, null, 2);
+            let status, cls;
+            if (p.ref === undefined) { status = '仅待测有'; cls = 'err'; missRef++; }
+            else if (p.act === undefined) { status = '仅参考有'; cls = 'err'; missAct++; }
+            else if (rText === aText) { status = '一致'; cls = 'match'; same++; }
+            else { status = '不一致'; cls = 'warn'; diff++; }
+            return { title: p.title, path: p.path, status, cls, keys: changedTopKeys(r, a), lcs: lineLcs(rText.split('\n'), aText.split('\n')) };
+        });
+        $('cmp-sum').innerHTML = `<span class="stat-pill">块 ${lastBlocks.length}</span><span class="stat-pill ok">一致 ${same}</span><span class="stat-pill warn">不一致 ${diff}</span><span class="stat-pill err">缺 ${missAct + missRef}</span>`;
+        renderBlocks();
+        toast('比对完成');
+    };
+    $('only-diff').onchange = () => { if (lastBlocks.length) renderBlocks(); };
+
+    checkStatus();
+    setInterval(checkStatus, 8000);
+})();
+</script>
+</body>
+</html>

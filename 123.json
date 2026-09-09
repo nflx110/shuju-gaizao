@@ -1,0 +1,434 @@
+{
+    "623": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948828089"
+        }
+    ],
+    "721": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948827745"
+        }
+    ],
+    "778": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "tcGroup": "B,C,D,E",
+            "tcId": "10608",
+            "adnAdType": 2,
+            "codeId": "961726723",
+            "version": 16002005
+        },
+        {
+            "adnType": 5,
+            "plt": 3,
+            "tcGroup": "B",
+            "tcId": "11323",
+            "adnAdType": 2,
+            "codeId": "18216698",
+            "version": 16006000
+        },
+        {
+            "adnType": 8,
+            "plt": 2,
+            "tcGroup": "B,C,D,E",
+            "tcId": "10608",
+            "adnAdType": 2,
+            "codeId": "9301164120416374",
+            "version": 16002005
+        }
+    ],
+    "101": [
+        {
+            "preLoad": "1",
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "888083889",
+            "adnAdType": 5,
+            "version": 14002000
+        },
+        {
+            "preLoad": "1",
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "2058792025477579",
+            "adnAdType": 5,
+            "version": 15004000
+        }
+    ],
+    "693": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "949012436"
+        }
+    ],
+    "2": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "949109619"
+        },
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "949109627"
+        },
+        {
+            "adnType": 8,
+            "plt": 1,
+            "codeId": "2125902504456769",
+            "adnAdType": 2,
+            "version": 16003000
+        }
+    ],
+    "784": [
+        {
+            "adnType": 8,
+            "plt": 2,
+            "codeId": "5135746180472225",
+            "adnAdType": 4,
+            "version": 16003005
+        },
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "964783018",
+            "adnAdType": 4,
+            "version": 16003005
+        }
+    ],
+    "791": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "969405408"
+        },
+        {
+            "adnAdType": 2,
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "4139023913524323"
+        }
+    ],
+    "666": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "958315125",
+            "adnAdType": 4,
+            "version": 15006000
+        },
+        {
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "6110316846885219",
+            "adnAdType": 4,
+            "version": 15006000
+        }
+    ],
+    "635": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "949012327"
+        }
+    ],
+    "604": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948820635"
+        },
+        {
+            "v": 15006005,
+            "plt": 2,
+            "codeId": "958559447",
+            "adnAdType": 2,
+            "adnType": 4,
+            "version": 13008005
+        },
+        {
+            "adnType": 5,
+            "plt": 3,
+            "tcGroup": "B",
+            "tcId": "11323",
+            "adnAdType": 2,
+            "codeId": "18216685",
+            "version": 16006000
+        }
+    ],
+    "807": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "984841128",
+            "adnAdType": 2,
+            "version": 17007000
+        },
+        {
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "4333862698636528",
+            "adnAdType": 2,
+            "version": 17007000
+        }
+    ],
+    "702": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "974581505",
+            "adnAdType": 4,
+            "version": 17001000
+        },
+        {
+            "adnType": 8,
+            "plt": 2,
+            "codeId": "8225211130775083",
+            "adnAdType": 4,
+            "version": 17001000
+        }
+    ],
+    "792": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "970750958",
+            "adnAdType": 2,
+            "version": 16010000
+        },
+        {
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "1251317629174243",
+            "adnAdType": 2,
+            "version": 16010000
+        }
+    ],
+    "704": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "964291464",
+            "adnAdType": 4,
+            "version": 16001006
+        },
+        {
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "964291473",
+            "adnAdType": 4,
+            "version": 16001006
+        },
+        {
+            "adnType": 8,
+            "plt": 2,
+            "codeId": "9145103732647702",
+            "adnAdType": 4,
+            "version": 16001006
+        }
+    ],
+    "401": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948827651"
+        }
+    ],
+    "642": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948827906"
+        }
+    ],
+    "599": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "948827959"
+        }
+    ],
+    "6": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "951987002",
+            "adnAdType": 2,
+            "version": 13009000
+        },
+        {
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "951986690",
+            "adnAdType": 2,
+            "version": 13006000
+        },
+        {
+            "adnType": 8,
+            "plt": 1,
+            "codeId": "7105809514257391",
+            "adnAdType": 2,
+            "version": 16003000
+        }
+    ],
+    "21": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "982980451",
+            "adnAdType": 2,
+            "version": 17006005
+        },
+        {
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "2351083372620641",
+            "adnAdType": 2,
+            "version": 17006005
+        }
+    ],
+    "768": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "957471824",
+            "adnAdType": 2,
+            "version": 15004000
+        }
+    ],
+    "647": [
+        {
+            "adnType": 4,
+            "tcId": "11395",
+            "tcGroup": "B",
+            "adnAdType": 2,
+            "plt": 1,
+            "codeId": "967325245"
+        }
+    ],
+    "769": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "957472146",
+            "adnAdType": 2,
+            "version": 15004000
+        }
+    ],
+    "770": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "957472215",
+            "adnAdType": 4,
+            "version": 15004000
+        }
+    ],
+    "1": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "949109619"
+        },
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "949109627"
+        },
+        {
+            "adnType": 8,
+            "plt": 1,
+            "codeId": "2125902504456769",
+            "adnAdType": 2,
+            "version": 16003000
+        }
+    ],
+    "651": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "974581663",
+            "adnAdType": 4,
+            "version": 17001000
+        },
+        {
+            "adnType": 8,
+            "plt": 2,
+            "codeId": "2235614130358575",
+            "adnAdType": 4,
+            "version": 17001000
+        }
+    ],
+    "798": [
+        {
+            "adnType": 4,
+            "plt": 3,
+            "codeId": "977636717",
+            "adnAdType": 2,
+            "version": 17003000
+        },
+        {
+            "adnType": 8,
+            "plt": 3,
+            "codeId": "4257095104221899",
+            "adnAdType": 2,
+            "version": 17003000
+        }
+    ],
+    "752": [
+        {
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "953666329",
+            "adnAdType": 4,
+            "version": 14009005
+        },
+        {
+            "adnType": 8,
+            "plt": 2,
+            "codeId": "6016194125567740",
+            "adnAdType": 4,
+            "version": 14009005
+        }
+    ],
+    "3": [
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 1,
+            "codeId": "949109619"
+        },
+        {
+            "adnAdType": 2,
+            "adnType": 4,
+            "plt": 2,
+            "codeId": "949109627"
+        },
+        {
+            "adnType": 8,
+            "plt": 1,
+            "codeId": "2125902504456769",
+            "adnAdType": 2,
+            "version": 16003000
+        }
+    ]
+}
