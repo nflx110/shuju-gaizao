@@ -298,7 +298,9 @@
             color: #3730a3;
             font-weight: 650;
         }
-        .shot-drop.drag { background: #c7d2fe; }
+        .shot-drop.drag,
+        .shot-drop.pasted { background: #c7d2fe; }
+        .shot-drop:focus { outline: 2px solid #4361ee; outline-offset: 2px; }
         .shot-list {
             display: flex;
             flex-wrap: wrap;
@@ -410,7 +412,7 @@
                 <input id="shot-botcrop" type="number" min="0" max="40" value="0">
             </div>
         </div>
-        <div class="shot-drop" id="shot-drop">点击或拖入截图，可一次选多张　＋ 添加截图</div>
+        <div class="shot-drop" id="shot-drop" tabindex="0" role="button">点击、拖入或 ⌘/Ctrl + V 粘贴截图，可一次多张　＋ 添加截图</div>
         <input id="shot-files" type="file" accept="image/*" multiple hidden>
         <div class="shot-list" id="shot-list"></div>
         <div class="row">
@@ -1639,17 +1641,82 @@
         renderShotList();
     }
 
-    function addShotFiles(fileList) {
-        const files = Array.from(fileList || []).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name));
-        files.sort((a, b) => naturalName(a.name, b.name));
+    function addShotFiles(fileList, opts) {
+        const files = Array.from(fileList || []).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name || ''));
+        if (!(opts && opts.keepOrder)) files.sort((a, b) => naturalName(a.name, b.name));
         files.forEach(file => {
             shotState.items.push({
                 file: file,
-                name: file.name,
+                name: file.name || ('paste-' + (shotState.items.length + 1) + '.png'),
                 url: URL.createObjectURL(file)
             });
         });
-        renderShotList();
+        if (files.length) renderShotList();
+        return files.length;
+    }
+
+    function extFromImageFile(file) {
+        const fromType = ((file && file.type) || '').split('/')[1] || '';
+        if (/^(png|jpe?g|webp|gif|bmp)$/i.test(fromType)) return fromType.toLowerCase().replace('jpeg', 'jpg');
+        const m = /\.(png|jpe?g|webp|gif|bmp)$/i.exec((file && file.name) || '');
+        return m ? m[1].toLowerCase().replace('jpeg', 'jpg') : 'png';
+    }
+
+    function filesFromClipboard(dt) {
+        const out = [];
+        const seen = new Set();
+        if (!dt) return out;
+        const push = (f) => {
+            if (!f || seen.has(f)) return;
+            if (!(/^image\//.test(f.type) || /\.(png|jpe?g|webp|gif|bmp)$/i.test(f.name || ''))) return;
+            seen.add(f);
+            out.push(f);
+        };
+        if (dt.files) Array.from(dt.files).forEach(push);
+        if (dt.items) {
+            for (let i = 0; i < dt.items.length; i++) {
+                const it = dt.items[i];
+                if (it.kind === 'file') push(it.getAsFile());
+            }
+        }
+        return out;
+    }
+
+    function namePastedFiles(files) {
+        const base = shotState.items.length;
+        return files.map((file, i) => {
+            const ext = extFromImageFile(file);
+            return new File([file], 'paste-' + (base + i + 1) + '.' + ext, {
+                type: file.type || ('image/' + (ext === 'jpg' ? 'jpeg' : ext)),
+                lastModified: Date.now()
+            });
+        });
+    }
+
+    function isTypingTarget(el) {
+        if (!el) return false;
+        const tag = (el.tagName || '').toLowerCase();
+        if (tag === 'textarea' || tag === 'select') return true;
+        if (tag === 'input') {
+            const t = (el.type || 'text').toLowerCase();
+            return t !== 'button' && t !== 'submit' && t !== 'checkbox' && t !== 'radio' && t !== 'file';
+        }
+        return Boolean(el.isContentEditable);
+    }
+
+    function flashShotDrop() {
+        const el = document.getElementById('shot-drop');
+        if (!el) return;
+        el.classList.add('pasted');
+        setTimeout(() => el.classList.remove('pasted'), 400);
+    }
+
+    function addPastedShots(dt) {
+        const files = namePastedFiles(filesFromClipboard(dt));
+        if (!files.length) return 0;
+        const n = addShotFiles(files, { keepOrder: true });
+        if (n) flashShotDrop();
+        return n;
     }
 
     function loadImage(src) {
@@ -1953,19 +2020,20 @@
         const apiKey = ((keyEl && keyEl.value) || localStorage.getItem("cursor_api_key") || "").trim();
         if (apiKey && keyEl) localStorage.setItem("cursor_api_key", apiKey);
         const images = canvases.map((c, i) => ({
-            name: (shotState.items[i] && shotState.items[i].name) || ("shot-" + (i + 1) + ".jpg"),
+            name: "shot-" + (i + 1) + ".jpg",
             mimeType: "image/jpeg",
             data: canvasToJpegBase64(c, 1280),
         }));
         const model = ((document.getElementById("shot-model") || {}).value) || "auto";
         setShotProgress("正在调用 Cursor AI 识图（" + images.length + " 张）…");
+        const asciiKey = String(apiKey || "").replace(/[^\t\x20-\x7E]/g, "");
+        const headers = { "Content-Type": "application/json" };
+        if (asciiKey) headers["x-cursor-api-key"] = asciiKey;
         const r = await fetch(aiServerBase() + "/api/ai-vision", {
             method: "POST",
-            headers: Object.assign(
-                { "Content-Type": "application/json" },
-                apiKey ? { "x-cursor-api-key": apiKey } : {}
-            ),
+            headers: headers,
             body: JSON.stringify({
+                apiKey: apiKey,
                 model: model,
                 images: images,
                 context: {
@@ -1974,7 +2042,7 @@
                     startOrder: startOrder,
                     expectOrders: expectList.map((x) => x.order),
                     backendAds: backendAds,
-                    filenames: shotState.items.map((x) => x.name),
+                    filenames: shotState.items.map((x, i) => "shot-" + (i + 1) + ".jpg"),
                 },
             }),
         });
@@ -1986,7 +2054,7 @@
     async function recognizeShots() {
         const out = document.getElementById('shot-out');
         if (!shotState.items.length) {
-            out.innerHTML = '<div class="card err">还没有截图。点「添加截图」上传实际前端瀑布流页面。</div>';
+            out.innerHTML = '<div class="card err">还没有截图。点「添加截图」、拖入，或 ⌘/Ctrl + V 粘贴实际前端瀑布流页面。</div>';
             return;
         }
         const layout = getLayoutSettings();
@@ -2095,6 +2163,13 @@
             shotInput.value = '';
         });
     }
+    document.addEventListener('paste', (e) => {
+        const files = filesFromClipboard(e.clipboardData);
+        if (!files.length) return;
+        const text = (e.clipboardData && e.clipboardData.getData('text/plain')) || '';
+        if (isTypingTarget(e.target) && text) return;
+        if (addPastedShots(e.clipboardData)) e.preventDefault();
+    });
     const btnShot = document.getElementById('btn-shot');
     if (btnShot) btnShot.addEventListener('click', recognizeShots);
     const btnShotClear = document.getElementById('btn-shot-clear');

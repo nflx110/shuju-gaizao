@@ -145,7 +145,9 @@ const server = createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/ai-vision") {
     try {
       const payload = JSON.parse(await readBody(req));
-      const apiKey = String(req.headers["x-cursor-api-key"] || process.env.CURSOR_API_KEY || "").trim();
+      const apiKey = String(
+        (payload && payload.apiKey) || req.headers["x-cursor-api-key"] || process.env.CURSOR_API_KEY || ""
+      ).trim();
       if (!apiKey) {
         send(res, 401, {
           error: "缺少 CURSOR_API_KEY。在页面里填写，或启动服务前 export CURSOR_API_KEY=...",
