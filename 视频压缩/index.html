@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>录屏压缩到 10MB</title>
+  <script src="./coi-serviceworker.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --blue: #4361ee;
+      --blue-2: #3f37c9;
+      --ok: #15803d;
+      --ok-bg: #dcfce7;
+      --bad: #b91c1c;
+      --bad-bg: #fee2e2;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(120deg, var(--blue), var(--blue-2));
+      color: #fff;
+      padding: 22px 20px 20px;
+    }
+    .header-inner { max-width: 720px; margin: 0 auto; }
+    .back {
+      display: inline-block;
+      color: #dbe4ff;
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .back:hover { color: #fff; }
+    header h1 { font-size: 24px; font-weight: 700; letter-spacing: .02em; }
+    header p { margin-top: 6px; font-size: 13px; color: #dbe4ff; line-height: 1.5; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 22px 20px 48px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .drop {
+      border: 1.5px dashed #c7d2fe;
+      background: #f8faff;
+      border-radius: 14px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: .15s ease;
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .drop:hover, .drop.over { border-color: var(--blue); background: #eef2ff; }
+    .drop strong { font-size: 16px; }
+    .drop span { font-size: 13px; color: var(--muted); }
+    .file {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    video.thumb {
+      width: 112px;
+      height: 148px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #0f172a;
+    }
+    .name { font-weight: 650; word-break: break-all; }
+    .meta { margin-top: 6px; font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .change {
+      margin-top: 10px;
+      border: 0;
+      background: none;
+      color: var(--blue);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .row { margin-top: 18px; }
+    .label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip, .go, .dl, .again {
+      font-family: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+    .chip {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      color: var(--ink);
+    }
+    .chip.on { background: #eef2ff; border-color: var(--blue); color: var(--blue-2); font-weight: 650; }
+    .custom {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .custom input {
+      width: 64px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .go {
+      width: 100%;
+      margin-top: 18px;
+      background: linear-gradient(120deg, var(--blue), var(--blue-2));
+      color: #fff;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .go:disabled { opacity: .45; cursor: not-allowed; }
+    .bar {
+      margin-top: 14px;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #60a5fa, var(--blue));
+      transition: width .2s ease;
+    }
+    .log {
+      margin-top: 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: 12px/1.55 ui-monospace, Menlo, monospace;
+      min-height: 92px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .result {
+      margin-top: 16px;
+      background: var(--ok-bg);
+      color: var(--ok);
+      border-radius: 12px;
+      padding: 14px;
+      display: none;
+    }
+    .result.show { display: block; }
+    .result b { display: block; font-size: 18px; margin-bottom: 4px; }
+    .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .dl, .again {
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .dl { background: var(--ok); color: #fff; text-decoration: none; }
+    .again { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .err {
+      display: none;
+      margin-top: 12px;
+      background: var(--bad-bg);
+      color: var(--bad);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+    .err.show { display: block; }
+    .hint { margin-top: 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+    #file { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="back" href="../index.html">← 返回工具首页</a>
+      <h1>录屏压缩到 10MB</h1>
+      <p>视频只在浏览器里处理，不会上传。适合微信、工单附件。首次会下载约 32MB 压缩引擎。</p>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <input id="file" type="file" accept="video/*,.mp4,.mov,.mkv,.m4v,.webm,.avi">
+      <div id="drop" class="drop">
+        <strong>把录屏拖到这里</strong>
+        <span>或点击选择 mp4 / mov</span>
+      </div>
+      <div id="picked" class="file" hidden>
+        <video id="thumb" class="thumb" muted playsinline></video>
+        <div>
+          <div id="fname" class="name"></div>
+          <div id="fmeta" class="meta"></div>
+          <button class="change" id="repick" type="button">换一个文件</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">目标上限</div>
+        <div class="chips">
+          <button class="chip" data-mb="5" type="button">5 MB</button>
+          <button class="chip on" data-mb="10" type="button">10 MB</button>
+          <button class="chip" data-mb="20" type="button">20 MB</button>
+          <label class="custom">自定义 <input id="target" type="number" min="1" step="1" value="10"> MB</label>
+        </div>
+      </div>
+
+      <button class="go" id="go" type="button" disabled>开始压缩</button>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="log" id="log">等待选择视频…</div>
+      <div class="err" id="err"></div>
+      <div class="result" id="result">
+        <b id="rsize"></b>
+        <div id="rdetail"></div>
+        <div class="actions">
+          <a class="dl" id="dl" download>下载压缩文件</a>
+          <button class="again" id="again" type="button">再压一个</button>
+        </div>
+      </div>
+      <p class="hint">竖屏长视频会自动降分辨率和帧率，尽量压进上限。若浏览器内存不够，可用本机版：双击同目录里的「压缩到10M.command」。</p>
+    </div>
+  </div>
+  <script>
+    const { FFmpeg } = FFmpegWASM;
+    const { fetchFile, toBlobURL } = FFmpegUtil;
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      file: null,
+      meta: null,
+      ffmpeg: null,
+      target: 10,
+      busy: false,
+      outUrl: "",
+    };
+
+    function log(line) {
+      const el = $("log");
+      if (el.textContent === "等待选择视频…") el.textContent = "";
+      el.textContent += (el.textContent ? "\n" : "") + line;
+      el.scrollTop = el.scrollHeight;
+    }
+    function setBar(p) {
+      $("bar").style.width = Math.max(0, Math.min(100, p * 100)) + "%";
+    }
+    function humanSize(n) {
+      if (n < 1024) return n + " B";
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+      return (n / 1024 / 1024).toFixed(1) + " MB";
+    }
+    function humanDur(s) {
+      s = Math.round(s || 0);
+      return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+    function even(n) {
+      n = Math.round(n);
+      return n - (n % 2);
+    }
+    function pickScale(w, h, bps) {
+      const long = Math.max(w, h);
+      let maxLong = long;
+      if (bps < 1200000 && long > 1280) maxLong = 1280;
+      if (bps < 700000 && long > 960) maxLong = 960;
+      if (bps < 400000 && long > 720) maxLong = 720;
+      if (bps < 220000 && long > 540) maxLong = 540;
+      if (maxLong >= long) return [even(w), even(h)];
+      const k = maxLong / long;
+      return [even(w * k), even(h * k)];
+    }
+    function pickFps(src, bps) {
+      let fps = Math.round(src) || 30;
+      if (bps < 800000) fps = Math.min(fps, 20);
+      if (bps < 350000) fps = Math.min(fps, 15);
+      return Math.max(fps, 12);
+    }
+
+    function readMeta(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const v = document.createElement("video");
+        v.preload = "metadata";
+        v.onloadedmetadata = () => {
+          resolve({
+            duration: v.duration || 0,
+            width: v.videoWidth || 0,
+            height: v.videoHeight || 0,
+            url,
+          });
+        };
+        v.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("浏览器读不了这个视频的信息"));
+        };
+        v.src = url;
+      });
+    }
+
+    async function setFile(file) {
+      if (!file) return;
+      $("err").classList.remove("show");
+      $("result").classList.remove("show");
+      $("log").textContent = "正在读取视频信息…";
+      try {
+        const meta = await readMeta(file);
+        state.file = file;
+        state.meta = meta;
+        $("drop").hidden = true;
+        $("picked").hidden = false;
+        $("fname").textContent = file.name;
+        $("fmeta").textContent =
+          humanSize(file.size) + "  ·  " + humanDur(meta.duration) + "  ·  " +
+          meta.width + "×" + meta.height;
+        $("thumb").src = meta.url;
+        $("go").disabled = false;
+        $("log").textContent = "已选好，点「开始压缩」即可。视频不会上传。";
+        setBar(0);
+      } catch (e) {
+        $("err").textContent = e.message;
+        $("err").classList.add("show");
+      }
+    }
+
+    const drop = $("drop");
+    drop.addEventListener("click", () => $("file").click());
+    $("repick").addEventListener("click", () => $("file").click());
+    $("file").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (f) setFile(f);
+    });
+    ["dragenter", "dragover"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        drop.classList.add("over");
+      });
+    });
+    ["dragleave", "drop"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        drop.classList.remove("over");
+      });
+    });
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) setFile(f);
+    });
+
+    document.querySelectorAll(".chip[data-mb]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip[data-mb]").forEach((b) => b.classList.remove("on"));
+        btn.classList.add("on");
+        $("target").value = btn.dataset.mb;
+        state.target = Number(btn.dataset.mb);
+      });
+    });
+    $("target").addEventListener("input", () => {
+      document.querySelectorAll(".chip[data-mb]").forEach((b) => b.classList.remove("on"));
+      const n = Number($("target").value);
+      if (n > 0) state.target = n;
+      const hit = document.querySelector('.chip[data-mb="' + $("target").value + '"]');
+      if (hit) hit.classList.add("on");
+    });
+
+    async function loadEngine() {
+      if (state.ffmpeg) return state.ffmpeg;
+      const ffmpeg = new FFmpeg();
+      ffmpeg.on("log", ({ message }) => {
+        if (/error|fail/i.test(message)) log(message);
+      });
+      ffmpeg.on("progress", ({ progress }) => {
+        if (progress > 0 && progress <= 1) setBar(0.22 + progress * 0.72);
+      });
+      const isolated = !!window.crossOriginIsolated;
+      const corePkg = isolated ? "@ffmpeg/core-mt@0.12.6" : "@ffmpeg/core@0.12.6";
+      const coreBase = "https://cdn.jsdelivr.net/npm/" + corePkg + "/dist/umd/";
+      log(isolated ? "正在加载多线程压缩引擎…" : "正在加载压缩引擎…");
+      const onWasm = ({ received, total }) => {
+        if (total > 0) {
+          const p = received / total;
+          setBar(p * 0.18);
+          $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
+            humanSize(received) + " / " + humanSize(total);
+        }
+      };
+      const coreURL = await toBlobURL(coreBase + "ffmpeg-core.js", "text/javascript");
+      const wasmURL = await toBlobURL(coreBase + "ffmpeg-core.wasm", "application/wasm", true, onWasm);
+      const opts = { coreURL, wasmURL };
+      if (isolated) {
+        opts.workerURL = await toBlobURL(coreBase + "ffmpeg-core.worker.js", "text/javascript");
+      }
+      await ffmpeg.load(opts);
+      state.ffmpeg = ffmpeg;
+      log("引擎已就绪");
+      return ffmpeg;
+    }
+
+    async function compress() {
+      if (state.busy || !state.file) return;
+      const target = Number($("target").value) || state.target;
+      if (target <= 0) return;
+      state.target = target;
+      state.busy = true;
+      $("go").disabled = true;
+      $("err").classList.remove("show");
+      $("result").classList.remove("show");
+      $("log").textContent = "";
+      setBar(0);
+      try {
+        const ffmpeg = await loadEngine();
+        const file = state.file;
+        const duration = state.meta.duration || 1;
+        const w = state.meta.width || 1280;
+        const h = state.meta.height || 720;
+        const budget = Math.floor(target * 1024 * 1024 * 0.9);
+        const totalBps = Math.floor((budget * 8) / duration);
+        const audioBps = 48000;
+        const videoBps = Math.max(totalBps - audioBps, 120000);
+        const [ow, oh] = pickScale(w, h, videoBps);
+        const fps = pickFps(30, videoBps);
+        log("原片 " + humanSize(file.size) + " · " + humanDur(duration) + " · " + w + "×" + h);
+        log("目标 ≤" + target + "MB · 视频 " + Math.round(videoBps / 1000) + "kbps · " + ow + "×" + oh + " @" + fps + "fps");
+        setBar(0.2);
+        log("写入浏览器内存…");
+        await ffmpeg.writeFile("input", await fetchFile(file));
+        const args = [
+          "-i", "input",
+          "-map", "0:v:0",
+          "-map", "0:a?",
+          "-c:v", "libx264",
+          "-preset", "ultrafast",
+          "-profile:v", "baseline",
+          "-pix_fmt", "yuv420p",
+          "-b:v", String(videoBps),
+          "-maxrate", String(Math.floor(videoBps * 1.15)),
+          "-bufsize", String(videoBps * 2),
+          "-vf", "scale=" + ow + ":" + oh + ",fps=" + fps,
+          "-c:a", "aac",
+          "-b:a", String(audioBps),
+          "-ac", "1",
+          "-movflags", "+faststart",
+          "-y",
+          "output.mp4",
+        ];
+        log("开始编码…");
+        let code = await ffmpeg.exec(args);
+        if (code !== 0) {
+          log("无音轨或音频编码失败，改为只压画面…");
+          code = await ffmpeg.exec([
+            "-i", "input",
+            "-an",
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-profile:v", "baseline",
+            "-pix_fmt", "yuv420p",
+            "-b:v", String(videoBps),
+            "-maxrate", String(Math.floor(videoBps * 1.15)),
+            "-bufsize", String(videoBps * 2),
+            "-vf", "scale=" + ow + ":" + oh + ",fps=" + fps,
+            "-movflags", "+faststart",
+            "-y",
+            "output.mp4",
+          ]);
+          if (code !== 0) throw new Error("ffmpeg 退出码 " + code);
+        }
+        const data = await ffmpeg.readFile("output.mp4");
+        const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+        const blob = new Blob([bytes], { type: "video/mp4" });
+        try { await ffmpeg.deleteFile("input"); } catch (_) {}
+        try { await ffmpeg.deleteFile("output.mp4"); } catch (_) {}
+        if (blob.size > target * 1024 * 1024) {
+          throw new Error("压完仍有 " + humanSize(blob.size) + "，超过 " + target + "MB。把上限再调低一点，或换本机版。");
+        }
+        if (state.outUrl) URL.revokeObjectURL(state.outUrl);
+        state.outUrl = URL.createObjectURL(blob);
+        const base = file.name.replace(/\.[^.]+$/, "");
+        const tag = Number.isInteger(target) ? target : target;
+        $("dl").href = state.outUrl;
+        $("dl").download = base + "_" + tag + "M.mp4";
+        $("rsize").textContent = "已压到 " + humanSize(blob.size);
+        $("rdetail").textContent = humanSize(file.size) + "  →  " + humanSize(blob.size) + "，低于 " + target + "MB。";
+        $("result").classList.add("show");
+        setBar(1);
+        log("完成：" + humanSize(blob.size));
+      } catch (e) {
+        console.error(e);
+        $("err").textContent = "压缩失败：" + (e && e.message ? e.message : e);
+        $("err").classList.add("show");
+        log("失败：" + (e && e.message ? e.message : e));
+      } finally {
+        state.busy = false;
+        $("go").disabled = !state.file;
+      }
+    }
+
+    $("go").addEventListener("click", compress);
+    $("again").addEventListener("click", () => {
+      $("file").value = "";
+      state.file = null;
+      $("picked").hidden = true;
+      $("drop").hidden = false;
+      $("go").disabled = true;
+      $("result").classList.remove("show");
+      $("log").textContent = "等待选择视频…";
+      setBar(0);
+    });
+  </script>
+</body>
+</html>

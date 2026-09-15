@@ -4,15 +4,26 @@ node_modules/
 .env.*
 *.pem
 .cursor/
+.shot-ai-store/
 __pycache__/
 *.pyc
 
 # 安装包过大，不入库
 *.dmg
 *.exe
-pc_tools_mac/Package/
+爱奇艺Mac小工具/Package/
+
+# 录屏过大，不入库
+*.mp4
+*.mov
+*.mkv
+*.webm
+
+# ffmpeg 两遍编码临时文件
+ffmpeg2pass*
 
 # 个人照片 / 表情，不入库
+个人素材/
 证件照*
 坠入丝网*
 cat-suit*
