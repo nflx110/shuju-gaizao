@@ -242,7 +242,7 @@
           <button class="again" id="again" type="button">再压一个</button>
         </div>
       </div>
-      <p class="hint">竖屏长视频会自动降分辨率和帧率，尽量压进上限。若浏览器内存不够，可用本机版：双击同目录里的「压缩到10M.command」。</p>
+      <p class="hint">浏览器里压缩会比本机慢一些，已按速度优先降分辨率。压完会清掉内存里的原片。大文件也可双击「压缩到10M.command」。</p>
     </div>
   </div>
   <script>
@@ -254,9 +254,11 @@
       file: null,
       meta: null,
       ffmpeg: null,
+      engine: null,
       target: 10,
       busy: false,
       outUrl: "",
+      mounted: false,
     };
 
     function log(line) {
@@ -264,6 +266,31 @@
       if (el.textContent === "等待选择视频…") el.textContent = "";
       el.textContent += (el.textContent ? "\n" : "") + line;
       el.scrollTop = el.scrollHeight;
+    }
+    function setEncodePct(p) {
+      setBar(0.2 + Math.max(0, Math.min(1, p)) * 0.75);
+      const lines = $("log").textContent.split("\n").filter((l) => !l.startsWith("编码中"));
+      $("log").textContent = lines.join("\n") + "\n编码中 " + Math.round(p * 100) + "%…";
+    }
+    function revokeUrl(url) {
+      if (url) {
+        try { URL.revokeObjectURL(url); } catch (_) {}
+      }
+    }
+    function clearPreview() {
+      $("thumb").removeAttribute("src");
+      if (state.meta && state.meta.url) revokeUrl(state.meta.url);
+      state.meta = null;
+    }
+    async function clearJobMemory(ffmpeg) {
+      if (!ffmpeg) return;
+      if (state.mounted) {
+        try { await ffmpeg.unmount("/in"); } catch (_) {}
+        state.mounted = false;
+      }
+      for (const name of ["input", "output.mp4"]) {
+        try { await ffmpeg.deleteFile(name); } catch (_) {}
+      }
     }
     function setBar(p) {
       $("bar").style.width = Math.max(0, Math.min(100, p * 100)) + "%";
@@ -283,20 +310,16 @@
     }
     function pickScale(w, h, bps) {
       const long = Math.max(w, h);
-      let maxLong = long;
-      if (bps < 1200000 && long > 1280) maxLong = 1280;
-      if (bps < 700000 && long > 960) maxLong = 960;
-      if (bps < 400000 && long > 720) maxLong = 720;
-      if (bps < 220000 && long > 540) maxLong = 540;
+      let maxLong = Math.min(long, 720);
+      if (bps < 800000) maxLong = Math.min(maxLong, 640);
+      if (bps < 500000) maxLong = Math.min(maxLong, 540);
+      if (bps < 280000) maxLong = Math.min(maxLong, 480);
       if (maxLong >= long) return [even(w), even(h)];
       const k = maxLong / long;
       return [even(w * k), even(h * k)];
     }
-    function pickFps(src, bps) {
-      let fps = Math.round(src) || 30;
-      if (bps < 800000) fps = Math.min(fps, 20);
-      if (bps < 350000) fps = Math.min(fps, 15);
-      return Math.max(fps, 12);
+    function pickFps() {
+      return 15;
     }
 
     function readMeta(file) {
@@ -324,6 +347,9 @@
       if (!file) return;
       $("err").classList.remove("show");
       $("result").classList.remove("show");
+      revokeUrl(state.outUrl);
+      state.outUrl = "";
+      if (state.meta && state.meta.url) revokeUrl(state.meta.url);
       $("log").textContent = "正在读取视频信息…";
       try {
         const meta = await readMeta(file);
@@ -420,28 +446,70 @@
         if (/error|fail/i.test(message)) log(message);
       });
       ffmpeg.on("progress", ({ progress }) => {
-        if (progress > 0 && progress <= 1) setBar(0.22 + progress * 0.72);
+        if (progress > 0 && progress <= 1) setEncodePct(progress);
       });
-      const isolated = !!window.crossOriginIsolated;
-      const corePkg = isolated ? "@ffmpeg/core-mt@0.12.6" : "@ffmpeg/core@0.12.6";
-      const coreBase = "https://cdn.jsdelivr.net/npm/" + corePkg + "/dist/umd/";
-      log(isolated ? "正在加载多线程压缩引擎…" : "正在加载压缩引擎…");
-      const onWasm = (received, total) => {
-        const p = total > 0 ? Math.min(received / total, 1) : 0;
-        setBar(p * 0.18);
-        $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
-          humanSize(received) + (total > received ? " / " + humanSize(total) : "");
-      };
-      const coreURL = await toBlobURLSafe(coreBase + "ffmpeg-core.js", "text/javascript");
-      const wasmURL = await toBlobURLSafe(coreBase + "ffmpeg-core.wasm", "application/wasm", onWasm);
-      const opts = { coreURL, wasmURL };
-      if (isolated) {
-        opts.workerURL = await toBlobURLSafe(coreBase + "ffmpeg-core.worker.js", "text/javascript");
+      let opts = state.engine;
+      if (!opts) {
+        const isolated = !!window.crossOriginIsolated;
+        const corePkg = isolated ? "@ffmpeg/core-mt@0.12.6" : "@ffmpeg/core@0.12.6";
+        const coreBase = "https://cdn.jsdelivr.net/npm/" + corePkg + "/dist/umd/";
+        log(isolated ? "正在加载多线程压缩引擎…" : "正在加载压缩引擎…");
+        const onWasm = (received, total) => {
+          const p = total > 0 ? Math.min(received / total, 1) : 0;
+          setBar(p * 0.18);
+          $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
+            humanSize(received) + (total > received ? " / " + humanSize(total) : "");
+        };
+        opts = {
+          coreURL: await toBlobURLSafe(coreBase + "ffmpeg-core.js", "text/javascript"),
+          wasmURL: await toBlobURLSafe(coreBase + "ffmpeg-core.wasm", "application/wasm", onWasm),
+        };
+        if (isolated) {
+          opts.workerURL = await toBlobURLSafe(coreBase + "ffmpeg-core.worker.js", "text/javascript");
+        }
+        state.engine = opts;
+      } else {
+        log("正在启动压缩引擎…");
       }
       await ffmpeg.load(opts);
       state.ffmpeg = ffmpeg;
       log("引擎已就绪");
       return ffmpeg;
+    }
+
+    function encodeArgs(inputPath, videoBps, audioBps, ow, oh, fps, withAudio) {
+      const vf = "scale=" + ow + ":" + oh + ":flags=fast_bilinear,fps=" + fps;
+      const video = [
+        "-i", inputPath,
+        ...(withAudio ? ["-map", "0:v:0", "-map", "0:a?"] : ["-an"]),
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-tune", "fastdecode",
+        "-profile:v", "baseline",
+        "-pix_fmt", "yuv420p",
+        "-bf", "0",
+        "-g", String(fps * 2),
+        "-threads", "0",
+        "-b:v", String(videoBps),
+        "-maxrate", String(Math.floor(videoBps * 1.2)),
+        "-bufsize", String(videoBps),
+        "-vf", vf,
+      ];
+      if (withAudio) video.push("-c:a", "aac", "-b:a", String(audioBps), "-ac", "1");
+      video.push("-movflags", "+faststart", "-y", "output.mp4");
+      return video;
+    }
+
+    async function openInput(ffmpeg, file) {
+      try {
+        await ffmpeg.mount("WORKERFS", { files: [file] }, "/in");
+        state.mounted = true;
+        return "/in/" + file.name;
+      } catch (e) {
+        log("改为拷贝进内存…");
+        await ffmpeg.writeFile("input", await fetchFile(file));
+        return "input";
+      }
     }
 
     async function compress() {
@@ -455,8 +523,8 @@
       $("result").classList.remove("show");
       $("log").textContent = "";
       setBar(0);
+      const ffmpeg = await loadEngine();
       try {
-        const ffmpeg = await loadEngine();
         const file = state.file;
         const duration = state.meta.duration || 1;
         const w = state.meta.width || 1280;
@@ -466,61 +534,29 @@
         const audioBps = 48000;
         const videoBps = Math.max(totalBps - audioBps, 120000);
         const [ow, oh] = pickScale(w, h, videoBps);
-        const fps = pickFps(30, videoBps);
+        const fps = pickFps();
         log("原片 " + humanSize(file.size) + " · " + humanDur(duration) + " · " + w + "×" + h);
-        log("目标 ≤" + target + "MB · 视频 " + Math.round(videoBps / 1000) + "kbps · " + ow + "×" + oh + " @" + fps + "fps");
+        log("目标 ≤" + target + "MB · " + ow + "×" + oh + " @" + fps + "fps · 速度优先");
         setBar(0.2);
-        log("写入浏览器内存…");
-        await ffmpeg.writeFile("input", await fetchFile(file));
-        const args = [
-          "-i", "input",
-          "-map", "0:v:0",
-          "-map", "0:a?",
-          "-c:v", "libx264",
-          "-preset", "ultrafast",
-          "-profile:v", "baseline",
-          "-pix_fmt", "yuv420p",
-          "-b:v", String(videoBps),
-          "-maxrate", String(Math.floor(videoBps * 1.15)),
-          "-bufsize", String(videoBps * 2),
-          "-vf", "scale=" + ow + ":" + oh + ",fps=" + fps,
-          "-c:a", "aac",
-          "-b:a", String(audioBps),
-          "-ac", "1",
-          "-movflags", "+faststart",
-          "-y",
-          "output.mp4",
-        ];
-        log("开始编码…");
-        let code = await ffmpeg.exec(args);
+        const inputPath = await openInput(ffmpeg, file);
+        log("开始编码…浏览器里会比本机慢，请稍候");
+        setEncodePct(0);
+        let code = await ffmpeg.exec(encodeArgs(inputPath, videoBps, audioBps, ow, oh, fps, true));
         if (code !== 0) {
           log("无音轨或音频编码失败，改为只压画面…");
-          code = await ffmpeg.exec([
-            "-i", "input",
-            "-an",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-profile:v", "baseline",
-            "-pix_fmt", "yuv420p",
-            "-b:v", String(videoBps),
-            "-maxrate", String(Math.floor(videoBps * 1.15)),
-            "-bufsize", String(videoBps * 2),
-            "-vf", "scale=" + ow + ":" + oh + ",fps=" + fps,
-            "-movflags", "+faststart",
-            "-y",
-            "output.mp4",
-          ]);
+          code = await ffmpeg.exec(encodeArgs(inputPath, videoBps, audioBps, ow, oh, fps, false));
           if (code !== 0) throw new Error("ffmpeg 退出码 " + code);
         }
         const data = await ffmpeg.readFile("output.mp4");
-        const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-        const blob = new Blob([bytes], { type: "video/mp4" });
-        try { await ffmpeg.deleteFile("input"); } catch (_) {}
-        try { await ffmpeg.deleteFile("output.mp4"); } catch (_) {}
+        const src = data instanceof Uint8Array ? data : new Uint8Array(data);
+        const copy = new Uint8Array(src.byteLength);
+        copy.set(src);
+        const blob = new Blob([copy], { type: "video/mp4" });
+        await clearJobMemory(ffmpeg);
         if (blob.size > target * 1024 * 1024) {
           throw new Error("压完仍有 " + humanSize(blob.size) + "，超过 " + target + "MB。把上限再调低一点，或换本机版。");
         }
-        if (state.outUrl) URL.revokeObjectURL(state.outUrl);
+        revokeUrl(state.outUrl);
         state.outUrl = URL.createObjectURL(blob);
         const base = file.name.replace(/\.[^.]+$/, "");
         const tag = Number.isInteger(target) ? target : target;
@@ -530,13 +566,14 @@
         $("rdetail").textContent = humanSize(file.size) + "  →  " + humanSize(blob.size) + "，低于 " + target + "MB。";
         $("result").classList.add("show");
         setBar(1);
-        log("完成：" + humanSize(blob.size));
+        log("完成：" + humanSize(blob.size) + "。原片已从内存清掉。");
       } catch (e) {
         console.error(e);
         $("err").textContent = "压缩失败：" + (e && e.message ? e.message : e);
         $("err").classList.add("show");
         log("失败：" + (e && e.message ? e.message : e));
       } finally {
+        await clearJobMemory(ffmpeg);
         state.busy = false;
         $("go").disabled = !state.file;
       }
@@ -546,6 +583,9 @@
     $("again").addEventListener("click", () => {
       $("file").value = "";
       state.file = null;
+      clearPreview();
+      revokeUrl(state.outUrl);
+      state.outUrl = "";
       $("picked").hidden = true;
       $("drop").hidden = false;
       $("go").disabled = true;
