@@ -138,8 +138,14 @@
       font-weight: 700;
     }
     .go:disabled { opacity: .45; cursor: not-allowed; }
-    .bar {
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-top: 14px;
+    }
+    .bar {
+      flex: 1;
       height: 10px;
       background: #e2e8f0;
       border-radius: 99px;
@@ -150,7 +156,14 @@
       height: 100%;
       width: 0;
       background: linear-gradient(90deg, #60a5fa, var(--blue));
-      transition: width .2s ease;
+      transition: width .15s linear;
+    }
+    .pct {
+      min-width: 48px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--blue-2);
+      text-align: right;
     }
     .log {
       margin-top: 12px;
@@ -231,7 +244,10 @@
       </div>
 
       <button class="go" id="go" type="button" disabled>开始压缩</button>
-      <div class="bar"><i id="bar"></i></div>
+      <div class="bar-row">
+        <div class="bar"><i id="bar"></i></div>
+        <div class="pct" id="pct">0%</div>
+      </div>
       <div class="log" id="log">等待选择视频…</div>
       <div class="err" id="err"></div>
       <div class="result" id="result">
@@ -259,6 +275,8 @@
       busy: false,
       outUrl: "",
       mounted: false,
+      duration: 0,
+      lastPct: 0,
     };
 
     function log(line) {
@@ -267,10 +285,25 @@
       el.textContent += (el.textContent ? "\n" : "") + line;
       el.scrollTop = el.scrollHeight;
     }
+    function parseTime(msg) {
+      const m = String(msg || "").match(/time=\s*(-?[\d:.]+)/);
+      if (!m) return null;
+      const t = m[1];
+      if (t.charAt(0) === "-") return 0;
+      const parts = t.split(":");
+      if (parts.length === 3) return (+parts[0]) * 3600 + (+parts[1]) * 60 + parseFloat(parts[2]);
+      return parseFloat(t);
+    }
+    function setPct(p) {
+      p = Math.max(0, Math.min(1, p));
+      if (p + 0.002 < state.lastPct) return;
+      state.lastPct = p;
+      $("bar").style.width = p * 100 + "%";
+      $("pct").textContent = Math.round(p * 100) + "%";
+      if (state.busy) $("go").textContent = "压缩中 " + Math.round(p * 100) + "%";
+    }
     function setEncodePct(p) {
-      setBar(0.2 + Math.max(0, Math.min(1, p)) * 0.75);
-      const lines = $("log").textContent.split("\n").filter((l) => !l.startsWith("编码中"));
-      $("log").textContent = lines.join("\n") + "\n编码中 " + Math.round(p * 100) + "%…";
+      setPct(0.2 + Math.max(0, Math.min(1, p)) * 0.78);
     }
     function revokeUrl(url) {
       if (url) {
@@ -291,9 +324,6 @@
       for (const name of ["input", "output.mp4"]) {
         try { await ffmpeg.deleteFile(name); } catch (_) {}
       }
-    }
-    function setBar(p) {
-      $("bar").style.width = Math.max(0, Math.min(100, p * 100)) + "%";
     }
     function humanSize(n) {
       if (n < 1024) return n + " B";
@@ -363,8 +393,9 @@
           meta.width + "×" + meta.height;
         $("thumb").src = meta.url;
         $("go").disabled = false;
+        $("go").textContent = "开始压缩";
         $("log").textContent = "已选好，点「开始压缩」即可。视频不会上传。";
-        setBar(0);
+        setPct(0);
       } catch (e) {
         $("err").textContent = e.message;
         $("err").classList.add("show");
@@ -443,10 +474,19 @@
       if (state.ffmpeg) return state.ffmpeg;
       const ffmpeg = new FFmpeg();
       ffmpeg.on("log", ({ message }) => {
-        if (/error|fail/i.test(message)) log(message);
+        const sec = parseTime(message);
+        if (sec != null && state.duration > 0) {
+          setEncodePct(Math.min(sec / state.duration, 0.99));
+        } else if (/error|fail/i.test(message)) {
+          log(message);
+        }
       });
-      ffmpeg.on("progress", ({ progress }) => {
-        if (progress > 0 && progress <= 1) setEncodePct(progress);
+      ffmpeg.on("progress", ({ progress, time }) => {
+        if (progress > 0 && progress <= 1) {
+          setEncodePct(progress);
+        } else if (time > 0 && state.duration > 0) {
+          setEncodePct(Math.min(time / 1e6 / state.duration, 0.99));
+        }
       });
       let opts = state.engine;
       if (!opts) {
@@ -456,7 +496,7 @@
         log(isolated ? "正在加载多线程压缩引擎…" : "正在加载压缩引擎…");
         const onWasm = (received, total) => {
           const p = total > 0 ? Math.min(received / total, 1) : 0;
-          setBar(p * 0.18);
+          setPct(p * 0.18);
           $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
             humanSize(received) + (total > received ? " / " + humanSize(total) : "");
         };
@@ -480,6 +520,8 @@
     function encodeArgs(inputPath, videoBps, audioBps, ow, oh, fps, withAudio) {
       const vf = "scale=" + ow + ":" + oh + ":flags=fast_bilinear,fps=" + fps;
       const video = [
+        "-hide_banner",
+        "-stats",
         "-i", inputPath,
         ...(withAudio ? ["-map", "0:v:0", "-map", "0:a?"] : ["-an"]),
         "-c:v", "libx264",
@@ -522,11 +564,13 @@
       $("err").classList.remove("show");
       $("result").classList.remove("show");
       $("log").textContent = "";
-      setBar(0);
+      state.lastPct = 0;
+      setPct(0);
       const ffmpeg = await loadEngine();
       try {
         const file = state.file;
         const duration = state.meta.duration || 1;
+        state.duration = duration;
         const w = state.meta.width || 1280;
         const h = state.meta.height || 720;
         const budget = Math.floor(target * 1024 * 1024 * 0.9);
@@ -537,7 +581,7 @@
         const fps = pickFps();
         log("原片 " + humanSize(file.size) + " · " + humanDur(duration) + " · " + w + "×" + h);
         log("目标 ≤" + target + "MB · " + ow + "×" + oh + " @" + fps + "fps · 速度优先");
-        setBar(0.2);
+        setPct(0.2);
         const inputPath = await openInput(ffmpeg, file);
         log("开始编码…浏览器里会比本机慢，请稍候");
         setEncodePct(0);
@@ -565,7 +609,7 @@
         $("rsize").textContent = "已压到 " + humanSize(blob.size);
         $("rdetail").textContent = humanSize(file.size) + "  →  " + humanSize(blob.size) + "，低于 " + target + "MB。";
         $("result").classList.add("show");
-        setBar(1);
+        setPct(1);
         log("完成：" + humanSize(blob.size) + "。原片已从内存清掉。");
       } catch (e) {
         console.error(e);
@@ -576,6 +620,7 @@
         await clearJobMemory(ffmpeg);
         state.busy = false;
         $("go").disabled = !state.file;
+        $("go").textContent = "开始压缩";
       }
     }
 
@@ -589,9 +634,10 @@
       $("picked").hidden = true;
       $("drop").hidden = false;
       $("go").disabled = true;
+      $("go").textContent = "开始压缩";
       $("result").classList.remove("show");
       $("log").textContent = "等待选择视频…";
-      setBar(0);
+      setPct(0);
     });
   </script>
 </body>
