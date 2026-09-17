@@ -385,6 +385,34 @@
       if (hit) hit.classList.add("on");
     });
 
+    async function toBlobURLSafe(url, mime, onProgress) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("下载失败 " + res.status);
+      const hinted = parseInt(res.headers.get("Content-Length") || "0", 10) || 0;
+      if (!onProgress || !res.body) {
+        const buf = await res.arrayBuffer();
+        return URL.createObjectURL(new Blob([buf], { type: mime }));
+      }
+      const reader = res.body.getReader();
+      const chunks = [];
+      let received = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.byteLength;
+        const total = Math.max(hinted, received);
+        onProgress(received, total);
+      }
+      const out = new Uint8Array(received);
+      let offset = 0;
+      for (const chunk of chunks) {
+        out.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      return URL.createObjectURL(new Blob([out], { type: mime }));
+    }
+
     async function loadEngine() {
       if (state.ffmpeg) return state.ffmpeg;
       const ffmpeg = new FFmpeg();
@@ -398,19 +426,17 @@
       const corePkg = isolated ? "@ffmpeg/core-mt@0.12.6" : "@ffmpeg/core@0.12.6";
       const coreBase = "https://cdn.jsdelivr.net/npm/" + corePkg + "/dist/umd/";
       log(isolated ? "正在加载多线程压缩引擎…" : "正在加载压缩引擎…");
-      const onWasm = ({ received, total }) => {
-        if (total > 0) {
-          const p = received / total;
-          setBar(p * 0.18);
-          $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
-            humanSize(received) + " / " + humanSize(total);
-        }
+      const onWasm = (received, total) => {
+        const p = total > 0 ? Math.min(received / total, 1) : 0;
+        setBar(p * 0.18);
+        $("log").textContent = "下载引擎 " + Math.round(p * 100) + "%  ·  " +
+          humanSize(received) + (total > received ? " / " + humanSize(total) : "");
       };
-      const coreURL = await toBlobURL(coreBase + "ffmpeg-core.js", "text/javascript");
-      const wasmURL = await toBlobURL(coreBase + "ffmpeg-core.wasm", "application/wasm", true, onWasm);
+      const coreURL = await toBlobURLSafe(coreBase + "ffmpeg-core.js", "text/javascript");
+      const wasmURL = await toBlobURLSafe(coreBase + "ffmpeg-core.wasm", "application/wasm", onWasm);
       const opts = { coreURL, wasmURL };
       if (isolated) {
-        opts.workerURL = await toBlobURL(coreBase + "ffmpeg-core.worker.js", "text/javascript");
+        opts.workerURL = await toBlobURLSafe(coreBase + "ffmpeg-core.worker.js", "text/javascript");
       }
       await ffmpeg.load(opts);
       state.ffmpeg = ffmpeg;
